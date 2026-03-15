@@ -16,7 +16,7 @@
     <div class="mx-auto max-w-md bg-white rounded-2xl shadow p-8">
       <h1 class="text-2xl font-semibold text-center">Welcome Back</h1>
       <p class="text-center text-gray-500 mb-6">Login as Farmer or Buyer</p>
-      <form action="/login" method="POST" class="space-y-4" aria-label="Login Form">
+      <form id="loginForm" action="/login" method="POST" class="space-y-4" aria-label="Login Form">
         <div>
           <label class="block text-sm mb-1">Email</label>
           <input name="email" type="email" class="w-full border rounded px-3 py-2" required />
@@ -32,11 +32,98 @@
             <option value="buyer">Buyer</option>
           </select>
         </div>
-        <button class="w-full bg-primary text-white rounded py-2 hover:opacity-90">Login</button>
+        <div class="flex justify-end">
+          <a href="#" id="forgotPasswordLink" class="text-sm text-primary hover:underline">Forgot Password?</a>
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-primary text-white rounded py-2 hover:opacity-90 transition-colors">Login</button>
       </form>
-      <p class="text-center text-sm mt-4">No account? <a href="/signup" class="text-primary">Sign up</a></p>
+      
+      <!-- Forgot Password Section -->
+      <div id="forgotPasswordContainer" class="hidden mt-4 p-4 border rounded bg-gray-50 border-gray-200">
+        <h3 class="text-sm font-medium mb-2">Reset Password</h3>
+        <input type="email" id="resetEmail" class="w-full border rounded px-3 py-2 text-sm mb-3 focus:ring-2 focus:ring-primary outline-none" placeholder="Enter your email address" />
+        <div class="flex gap-2">
+          <button id="sendResetBtn" class="bg-primary text-white text-sm px-4 py-1.5 rounded hover:opacity-90 font-medium w-full">Send Link</button>
+          <button id="cancelResetBtn" class="bg-gray-200 text-gray-700 text-sm px-4 py-1.5 rounded hover:bg-gray-300 font-medium w-full">Cancel</button>
+        </div>
+      </div>
+
+      <p class="text-center text-sm mt-6">No account? <a href="/signup" class="text-primary font-medium hover:underline">Sign up</a></p>
     </div>
   </div>
+
+  <script type="module">
+    import { auth } from '/js/firebase-config.js';
+    import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = loginForm.email.value.trim();
+      const password = loginForm.password.value;
+      
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = 'Logging in...';
+      
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (!userCredential.user.emailVerified) {
+          alert("Please verify your email before logging in.");
+          await signOut(auth);
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = 'Login';
+        } else {
+          loginForm.submit(); // Proceed to our Node backend
+        }
+      } catch (error) {
+        let errorMsg = error.message;
+        if (error.code === 'auth/invalid-credential') errorMsg = "Invalid email or password.";
+        alert("Login failed: " + errorMsg);
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Login';
+      }
+    });
+
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const forgotPasswordContainer = document.getElementById('forgotPasswordContainer');
+    const cancelResetBtn = document.getElementById('cancelResetBtn');
+    const sendResetBtn = document.getElementById('sendResetBtn');
+    const resetEmailInput = document.getElementById('resetEmail');
+
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotPasswordContainer.classList.remove('hidden');
+      resetEmailInput.value = loginForm.email.value.trim();
+    });
+
+    cancelResetBtn.addEventListener('click', () => {
+      forgotPasswordContainer.classList.add('hidden');
+    });
+
+    sendResetBtn.addEventListener('click', async () => {
+      const email = resetEmailInput.value.trim();
+      if (!email) {
+        alert("Please enter a valid email address for password reset.");
+        return;
+      }
+      
+      sendResetBtn.disabled = true;
+      sendResetBtn.innerHTML = 'Sending...';
+      
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset link has been sent to your email.");
+        forgotPasswordContainer.classList.add('hidden');
+      } catch (error) {
+        alert("Error sending reset email: " + error.message);
+      } finally {
+        sendResetBtn.disabled = false;
+        sendResetBtn.innerHTML = 'Send Link';
+      }
+    });
+  </script>
 </body>
 </html>
 

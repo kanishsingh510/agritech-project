@@ -474,13 +474,49 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Creating Account...';
         
-        // Submit the form
-        form.submit();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (window.handleFirebaseSignup) {
+            window.handleFirebaseSignup(email, password, form);
+        } else {
+            form.submit();
+        }
       }
     });
 
     // Initial validation
     validateForm();
+  </script>
+
+  <script type="module">
+    import { auth } from '/js/firebase-config.js';
+    import { createUserWithEmailAndPassword, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    window.handleFirebaseSignup = async function(email, password, formElement) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await sendEmailVerification(user);
+        alert("Verification email sent. Please check your inbox and verify your email before logging in.");
+        
+        // Only submit to the backend AFTER Firebase completes successfully
+        formElement.submit(); 
+      } catch (error) {
+        // Convert some common firebase errors to user friendly messages
+        let msg = error.message;
+        if (error.code === 'auth/email-already-in-use') {
+          msg = "Email is already registered. Please sign in.";
+        }
+        alert("Error creating account: " + msg);
+        
+        // Reset button
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Create Account';
+        }
+      }
+    };
   </script>
 </body>
 </html>
