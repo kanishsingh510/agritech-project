@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %> - Farmer Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        :root {
+            --primary: #1fb57f;
+            --primary-dark: #169a6d;
+            --primary-light: #e6f7f1;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .back-link i {
+            margin-right: 0.5rem;
+        }
+
+        .product-detail-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .product-image-col {
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            min-height: 400px;
+        }
+
+        .product-image-col img {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .product-info-col {
+            padding: 3rem;
+        }
+
+        .product-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--gray-800);
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .spec-item .label {
+            display: block;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .spec-item .value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .product-description {
+            margin-bottom: 2.5rem;
+        }
+
+        .product-description h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .product-description p {
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-edit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-edit:hover {
+            background-color: var(--primary-dark);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background-color: #bb2d3b;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <a href="/farmer/dashboard" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        <div class="product-detail-card">
+            <div class="row g-0">
+                <div class="col-lg-6 product-image-col">
+                    <img src="<%= product.image || '/images/placeholder-product.jpg' %>" alt="<%= product.name %>">
+                </div>
+                <div class="col-lg-6 product-info-col">
+                    <span class="category-badge">
+                        <i class="fas fa-tag me-1"></i> <%= product.category %>
+                    </span>
+                    <% if (product.isOrganic) { %>
+                        <span class="category-badge bg-success text-white ms-2">
+                            <i class="fas fa-leaf me-1"></i> Organic
+                        </span>
+                    <% } %>
+
+                    <h1 class="product-title"><%= product.name %></h1>
+                    <div class="product-price">₹<%= product.price.toFixed(2) %> <span class="fs-5 text-muted fw-normal">/ <%= product.unit || 'kg' %></span></div>
+
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <span class="label"><i class="fas fa-box me-1"></i> Stock Available</span>
+                            <span class="value"><%= product.quantity %> <%= product.unit || 'kg' %></span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="label"><i class="fas fa-calendar-alt me-1"></i> Added On</span>
+                            <span class="value"><%= new Date(product.createdAt).toLocaleDateString() %></span>
+                        </div>
+                    </div>
+
+                    <div class="product-description">
+                        <h3>About this Product</h3>
+                        <p><%= product.description || 'No description provided for this product.' %></p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <!-- We redirect to dashboard with proper hash or script to pop edit modal if necessary, or simple link back -->
+                        <a href="/farmer/dashboard" class="btn btn-edit text-decoration-none">
+                            <i class="fas fa-arrow-left me-2"></i> Go to Dashboard to Edit
+                        </a>
+                        <form action="/farmer/products/<%= product._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                            <button type="submit" class="btn btn-delete">
+                                <i class="fas fa-trash me-2"></i> Delete Product
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

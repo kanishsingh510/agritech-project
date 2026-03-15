@@ -636,7 +636,7 @@ if (typeof deleted === 'undefined') { deleted = false; }
                             <i class="fas fa-edit"></i>
                       </button>
 
-                      <form action="/products/<%= product._id %>?_method=DELETE" method="POST" class="d-inline">
+                      <form action="/farmer/products/<%= product._id %>?_method=DELETE" method="POST" class="d-inline">
                         <button type="submit" class="action-btn" title="Delete"
                           onclick="return confirm('Are you sure you want to delete this product?')">
                           <i class="fas fa-trash"></i>
@@ -663,7 +663,7 @@ if (typeof deleted === 'undefined') { deleted = false; }
                           <%= product.unit || 'kg' %>
                       </span>
                     </div>
-                    <a href="/products/<%= product._id %>" class="btn-view">
+                    <a href="/farmer/products/<%= product._id %>" class="btn-view">
                       View Details <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                   </div>
@@ -910,9 +910,9 @@ if (typeof deleted === 'undefined') { deleted = false; }
 
             // set form action to /products/:id (POST)
             var form = elById('editProductForm');
-            if (form) form.action = '/products/' + id;
-
-            // show modal
+              if (form) {
+                form.action = '/farmer/products/' + id;
+              }// show modal
             editModal.show();
           });
         });

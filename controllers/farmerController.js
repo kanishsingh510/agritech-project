@@ -62,6 +62,28 @@ const renderDashboard = async (req, res, next) => {
   }
 };
 
+const getProductDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send('Invalid Product ID');
+    }
+
+    const product = await Product.findOne({ _id: id, farmerId: req.session.user._id });
+    if (!product) {
+      return res.status(404).send('Product not found or you do not have permission to view it.');
+    }
+
+    res.render('farmer/productDetails', { 
+      user: req.session.user, 
+      product 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('<pre>' + (err.stack || err.message || err) + '</pre>');
+  }
+};
+
 const createProduct = async (req, res, next) => {
   try {
     const { name, category, price, quantity, unit, description, isOrganic } = req.body;
@@ -151,7 +173,7 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { upload, ensureFarmer, renderDashboard, createProduct, updateProduct, deleteProduct };
+module.exports = { upload, ensureFarmer, renderDashboard, getProductDetails, createProduct, updateProduct, deleteProduct };
 
 
 
