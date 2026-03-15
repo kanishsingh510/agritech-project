@@ -1,13 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const methodOverride = require('method-override');
-const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 
-dotenv.config();
 const app = express();
 
 // View engine setup
@@ -73,7 +72,6 @@ async function bootstrap() {
   // 🧠 Auto-Free Port Logic
   const startServer = (port) => {
     const server = app.listen(port, () => {
-      console.log(`✅ MongoDB Connected (Local)`);
       console.log(`🚀 Server running on http://localhost:${port}`);
     });
 
