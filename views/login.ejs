@@ -23,7 +23,10 @@
         </div>
         <div>
           <label class="block text-sm mb-1">Password</label>
-          <input name="password" type="password" class="w-full border rounded px-3 py-2" required />
+          <div class="password-container relative">
+            <input name="password" id="password" type="password" class="w-full border rounded px-3 py-2 pr-10" required />
+            <span onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500">👁</span>
+          </div>
         </div>
         <div>
           <label class="block text-sm mb-1">Login as</label>
@@ -123,6 +126,13 @@
         sendResetBtn.innerHTML = 'Send Link';
       }
     });
+  </script>
+  
+  <script>
+    function togglePassword() {
+      const pass = document.getElementById("password");
+      pass.type = pass.type === "password" ? "text" : "password";
+    }
   </script>
 </body>
 </html>
