@@ -1,0 +1,91 @@
+/* Reset some default styles */
+body, h1, form, label, input, select, button {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Set the background image to cover the entire viewport */
+body {
+    background-image: url('https://images.unsplash.com/photo-1492496913980-501348b61469?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFybXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=1000&q=60'); /* Replace 'path-to-cropped-image.jpg' with the actual path to your cropped image */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center center; /* Center the background image */
+    color: #fff; /* Set text color to white for better visibility */
+}
+
+/* Style the header */
+h1 {
+    background-color: rgba(0, 123, 255, 0.8); /* Semi-transparent background color */
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Style the form container */
+form {
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Style form labels */
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Style form input fields */
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+/* Style file input specifically */
+input[type="file"] {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border: 2px dashed #007BFF;
+    text-align: center;
+}
+
+input[type="file"]:hover {
+    background-color: #e9ecef;
+    border-color: #0056b3;
+}
+
+/* Style the select dropdown */
+select {
+    appearance: none;
+    background-image: url("https://cdn.jsdelivr.net/npm/fontawesome@5.15.3/svgs/solid/caret-down.svg");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+/* Style the submit button */
+button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Apply hover effect to the submit button */
+button:hover {
+    background-color: #0056b3;
+}

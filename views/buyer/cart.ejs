@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopping Cart - AgriTech</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root {
+      --primary-green: #28a745;
+      --dark-green: #218838;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: var(--primary-green) !important;
+    }
+    .btn-success {
+      background-color: var(--primary-green);
+      border-color: var(--primary-green);
+    }
+    .btn-success:hover {
+      background-color: var(--dark-green);
+      border-color: var(--dark-green);
+    }
+    .cart-item {
+      transition: transform 0.2s;
+    }
+    .cart-item:hover {
+      transform: translateX(5px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/buyer/marketplace">
+        <i class="fas fa-seedling me-2"></i>AgriTech
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/buyer/marketplace">Marketplace</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/buyer/dashboard">My Purchases</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/buyer/cart">
+              <i class="fas fa-shopping-cart"></i> Cart
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-language"></i> Language
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">English</a></li>
+              <li><a class="dropdown-item" href="#">हिंदी</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <form action="/logout" method="POST" class="d-inline">
+              <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Shopping Cart</h2>
+
+    <!-- Flash Messages -->
+    <div id="flashMessages"></div>
+
+    <!-- Cart Items -->
+    <div id="cartItems" class="row">
+      <!-- Cart items will be loaded here -->
+    </div>
+
+    <!-- Empty Cart -->
+    <div id="emptyCart" class="text-center py-5" style="display: none;">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h4>Your cart is empty</h4>
+      <p class="text-muted">Add some products from the marketplace!</p>
+      <a href="/buyer/marketplace" class="btn btn-success mt-3">
+        <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+      </a>
+    </div>
+
+    <!-- Cart Summary -->
+    <div id="cartSummary" class="card mt-4" style="display: none;">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <h5>Order Summary</h5>
+            <hr>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal:</span>
+              <span id="subtotal">₹0.00</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Tax (5%):</span>
+              <span id="tax">₹0.00</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between">
+              <strong>Total:</strong>
+              <strong class="text-success" id="total">₹0.00</strong>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-success btn-lg w-100" id="checkoutBtn">
+              <i class="fas fa-lock me-2"></i>Proceed to Checkout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Get cart from localStorage
+    function getCart() {
+      const cart = localStorage.getItem('cart');
+      return cart ? JSON.parse(cart) : [];
+    }
+
+    // Save cart to localStorage
+    function saveCart(cart) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    // Load cart items
+    function loadCart() {
+      const cart = getCart();
+      const cartItemsDiv = document.getElementById('cartItems');
+      const emptyCartDiv = document.getElementById('emptyCart');
+      const cartSummaryDiv = document.getElementById('cartSummary');
+
+      if (cart.length === 0) {
+        cartItemsDiv.innerHTML = '';
+        emptyCartDiv.style.display = 'block';
+        cartSummaryDiv.style.display = 'none';
+        return;
+      }
+
+      emptyCartDiv.style.display = 'none';
+      cartSummaryDiv.style.display = 'block';
+
+      let html = '<div class="col-12"><div class="card"><div class="card-body">';
+      let subtotal = 0;
+
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        html += `
+          <div class="cart-item border-bottom pb-3 mb-3">
+            <div class="row align-items-center">
+              <div class="col-md-2">
+                <img src="${item.image || 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=400&auto=format&fit=crop'}" 
+                     class="img-fluid rounded" alt="${item.name}">
+              </div>
+              <div class="col-md-4">
+                <h6 class="mb-1">${item.name}</h6>
+                <p class="text-muted small mb-0">Price: ₹${item.price.toFixed(2)}</p>
+              </div>
+              <div class="col-md-3">
+                <div class="input-group">
+                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(${index}, -1)">-</button>
+                  <input type="number" class="form-control text-center" value="${item.quantity}" min="1" 
+                         onchange="updateQuantity(${index}, 0, this.value)" id="qty-${index}">
+                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(${index}, 1)">+</button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <strong class="text-success">₹${itemTotal.toFixed(2)}</strong>
+              </div>
+              <div class="col-md-1">
+                <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div></div></div>';
+      cartItemsDiv.innerHTML = html;
+
+      // Update summary
+      const tax = subtotal * 0.05;
+      const total = subtotal + tax;
+      document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
+      document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+    }
+
+    // Update quantity
+    function updateQuantity(index, change, value) {
+      const cart = getCart();
+      if (value !== undefined) {
+        cart[index].quantity = parseInt(value) || 1;
+      } else {
+        cart[index].quantity = Math.max(1, cart[index].quantity + change);
+      }
+      saveCart(cart);
+      loadCart();
+    }
+
+    // Remove from cart
+    function removeFromCart(index) {
+      if (confirm('Remove this item from cart?')) {
+        const cart = getCart();
+        cart.splice(index, 1);
+        saveCart(cart);
+        loadCart();
+        showFlashMessage('Item removed from cart', 'success');
+      }
+    }
+
+    // Checkout
+    document.getElementById('checkoutBtn').addEventListener('click', async function() {
+      const cart = getCart();
+      if (cart.length === 0) {
+        showFlashMessage('Your cart is empty', 'warning');
+        return;
+      }
+
+      // Calculate total
+      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      let tax = subtotal * 0.05;
+      let total = subtotal + tax;
+
+      // For now, process first item. In production, you'd create a combined order
+      if (cart.length > 0) {
+        try {
+          const res = await fetch('/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              amount: total * 100 // Convert to paise
+            })
+          });
+          const data = await res.json();
+          
+          if (data.error) {
+            showFlashMessage(data.error, 'danger');
+            return;
+          }
+
+          const options = {
+            key: data.key,
+            amount: Math.round(total * 100),
+            currency: 'INR',
+            name: 'AgriTech',
+            description: 'Cart Checkout',
+            order_id: data.orderId,
+            handler: async function (response) {
+              const verifyRes = await fetch('/payment/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(response)
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                // Clear cart
+                localStorage.removeItem('cart');
+                window.location.href = '/buyer/dashboard';
+              } else {
+                showFlashMessage('Payment verification failed', 'danger');
+              }
+            }
+          };
+          new Razorpay(options).open();
+        } catch (error) {
+          console.error('Error:', error);
+          showFlashMessage('Error processing checkout', 'danger');
+        }
+      }
+    });
+
+    // Flash message function
+    function showFlashMessage(message, type) {
+      const flashDiv = document.getElementById('flashMessages');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      flashDiv.appendChild(alert);
+      setTimeout(() => alert.remove(), 3000);
+    }
+
+    // Load cart on page load
+    loadCart();
+  </script>
+</body>
+</html>
+

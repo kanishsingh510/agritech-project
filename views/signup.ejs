@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { 
+      theme: { 
+        extend: { 
+          colors: { 
+            primary: '#3CB043',
+            success: '#10B981',
+            error: '#EF4444',
+            warning: '#F59E0B'
+          } 
+        } 
+      } 
+    }
+  </script>
+  <style> 
+    body { font-family: Inter, ui-sans-serif, system-ui; }
+    .input-error { border-color: #EF4444 !important; }
+    .input-success { border-color: #10B981 !important; }
+    .error-message { color: #EF4444; font-size: 0.75rem; margin-top: 0.25rem; display: none; }
+    .password-strength {
+      height: 4px;
+      margin-top: 0.25rem;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .strength-0 { width: 0%; background-color: #EF4444; }
+    .strength-1 { width: 25%; background-color: #EF4444; }
+    .strength-2 { width: 50%; background-color: #F59E0B; }
+    .strength-3 { width: 75%; background-color: #3B82F6; }
+    .strength-4 { width: 100%; background-color: #10B981; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mx-auto max-w-md bg-white rounded-2xl shadow p-8">
+      <h1 class="text-2xl font-semibold text-center">Create Account</h1>
+      <p class="text-center text-gray-500 mb-6">Join as Farmer or Buyer</p>
+      
+      <form id="signupForm" action="/signup" method="POST" class="space-y-4" novalidate>
+        <!-- Name Field -->
+        <div class="form-group">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            pattern="^[A-Za-z\s]{3,}$"
+            title="Name should only contain letters and spaces (min 3 characters)"
+            required
+          />
+          <div id="name-error" class="error-message">
+            Please enter a valid name (only letters and spaces, min 3 characters)
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            required
+          />
+          <div id="email-error" class="error-message">
+            Please enter a valid email address
+          </div>
+          <div id="email-exists-error" class="error-message" style="display: none;">
+            This email is already registered. Please use a different email or <a href="/login" class="text-primary hover:underline">login here</a>.
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition pr-10"
+              minlength="8"
+              required
+              oninput="checkPasswordStrength(this.value)"
+            />
+            <div id="password-toggle" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+          </div>
+          <div id="password-strength" class="password-strength strength-0 mb-1"></div>
+          <div id="password-error" class="error-message">
+            Password must be at least 8 characters long and include uppercase, lowercase, number, and special character
+          </div>
+          <div id="password-hints" class="text-xs text-gray-500 mt-1 space-y-0.5">
+            <div id="length-hint" class="flex items-center">
+              <svg class="h-3 w-3 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              At least 8 characters
+            </div>
+            <div id="uppercase-hint" class="flex items-center">
+              <svg class="h-3 w-3 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Uppercase letter (A-Z)
+            </div>
+            <div id="lowercase-hint" class="flex items-center">
+              <svg class="h-3 w-3 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Lowercase letter (a-z)
+            </div>
+            <div id="number-hint" class="flex items-center">
+              <svg class="h-3 w-3 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Number (0-9)
+            </div>
+            <div id="special-hint" class="flex items-center">
+              <svg class="h-3 w-3 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Special character (!@#$%^&*)
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group">
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              name="confirmPassword" 
+              class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition pr-10"
+              required
+            />
+            <div id="confirm-password-toggle" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+          </div>
+          <div id="confirm-password-error" class="error-message">
+            Passwords do not match
+          </div>
+        </div>
+
+        <!-- Role Field -->
+        <div class="form-group">
+          <label for="role" class="block text-sm font-medium text-gray-700 mb-1">I am a</label>
+          <select 
+            id="role" 
+            name="role" 
+            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            required
+          >
+            <option value="">Select your role</option>
+            <option value="farmer">Farmer</option>
+            <option value="buyer">Buyer</option>
+          </select>
+          <div id="role-error" class="error-message">
+            Please select a role
+          </div>
+        </div>
+
+        <!-- Location Field -->
+        <div class="form-group">
+          <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location (optional)</label>
+          <input 
+            type="text" 
+            id="location" 
+            name="location" 
+            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          id="submitBtn"
+          class="w-full bg-primary text-white rounded-lg py-2.5 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition"
+          disabled
+        >
+          Create Account
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-gray-600 mt-6">
+        Already have an account? 
+        <a href="/login" class="text-primary font-medium hover:underline">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const form = document.getElementById('signupForm');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const roleSelect = document.getElementById('role');
+    const submitBtn = document.getElementById('submitBtn');
+    const passwordToggle = document.getElementById('password-toggle');
+    const confirmPasswordToggle = document.getElementById('confirm-password-toggle');
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      const hints = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*]/.test(password)
+      };
+
+      // Update strength score
+      strength += hints.length ? 1 : 0;
+      strength += hints.uppercase ? 1 : 0;
+      strength += hints.lowercase ? 1 : 0;
+      strength += hints.number ? 1 : 0;
+      strength += hints.special ? 1 : 0;
+
+      // Update strength meter
+      const strengthMeter = document.getElementById('password-strength');
+      strengthMeter.className = `password-strength strength-${Math.min(4, Math.max(0, strength - 1))}`;
+
+      // Update hints
+      Object.keys(hints).forEach(key => {
+        const hintElement = document.getElementById(`${key}-hint`);
+        if (hintElement) {
+          const icon = hintElement.querySelector('path');
+          if (hints[key]) {
+            hintElement.classList.add('text-success');
+            icon.classList.remove('text-gray-400');
+            icon.classList.add('text-green-500');
+          } else {
+            hintElement.classList.remove('text-success');
+            icon.classList.add('text-gray-400');
+            icon.classList.remove('text-green-500');
+          }
+        }
+      });
+
+      return strength >= 5; // All requirements met
+    }
+
+    // Toggle password visibility
+    function togglePasswordVisibility(input, toggleBtn) {
+      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+      input.setAttribute('type', type);
+      
+      // Toggle eye icon
+      const icon = toggleBtn.querySelector('svg');
+      if (type === 'password') {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+      } else {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+      }
+    }
+
+    // Validate name (only letters and spaces, min 3 chars)
+    function validateName() {
+      const name = nameInput.value.trim();
+      const nameRegex = /^[A-Za-z\s]{3,}$/;
+      const isValid = nameRegex.test(name);
+      
+      if (name && !isValid) {
+        showError(nameInput, 'name-error');
+        return false;
+      } else if (!name) {
+        showError(nameInput, 'name-error');
+        return false;
+      } else {
+        showSuccess(nameInput);
+        return true;
+      }
+    }
+
+    // Validate email format
+    function validateEmail() {
+      const email = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValid = emailRegex.test(email);
+      
+      if (email && !isValid) {
+        showError(emailInput, 'email-error');
+        return false;
+      } else if (!email) {
+        showError(emailInput, 'email-error');
+        return false;
+      } else {
+        showSuccess(emailInput);
+        return true;
+      }
+    }
+
+    // Check if email exists
+    async function checkEmailExists() {
+      const email = emailInput.value.trim();
+      if (!email) return false;
+      
+      try {
+        const response = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        
+        if (data.exists) {
+          document.getElementById('email-exists-error').style.display = 'block';
+          emailInput.classList.add('input-error');
+          return true;
+        } else {
+          document.getElementById('email-exists-error').style.display = 'none';
+          return false;
+        }
+      } catch (error) {
+        console.error('Error checking email:', error);
+        return false;
+      }
+    }
+
+    // Validate password strength
+    function validatePassword() {
+      const password = passwordInput.value;
+      const isStrong = checkPasswordStrength(password);
+      
+      if (password && !isStrong) {
+        showError(passwordInput, 'password-error');
+        return false;
+      } else if (!password) {
+        showError(passwordInput, 'password-error');
+        return false;
+      } else {
+        showSuccess(passwordInput);
+        return true;
+      }
+    }
+
+    // Validate password confirmation
+    function validateConfirmPassword() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      
+      if (confirmPassword && password !== confirmPassword) {
+        showError(confirmPasswordInput, 'confirm-password-error');
+        return false;
+      } else if (!confirmPassword) {
+        showError(confirmPasswordInput, 'confirm-password-error');
+        return false;
+      } else {
+        showSuccess(confirmPasswordInput);
+        return true;
+      }
+    }
+
+    // Validate role selection
+    function validateRole() {
+      const role = roleSelect.value;
+      
+      if (!role) {
+        showError(roleSelect, 'role-error');
+        return false;
+      } else {
+        showSuccess(roleSelect);
+        return true;
+      }
+    }
+
+    // Show error message and style
+    function showError(input, errorId) {
+      const errorElement = document.getElementById(errorId);
+      if (errorElement) {
+        errorElement.style.display = 'block';
+      }
+      input.classList.add('input-error');
+      input.classList.remove('input-success');
+      input.setAttribute('aria-invalid', 'true');
+    }
+
+    // Show success style
+    function showSuccess(input) {
+      const errorElements = input.parentElement.querySelectorAll('.error-message');
+      errorElements.forEach(el => {
+        el.style.display = 'none';
+      });
+      input.classList.remove('input-error');
+      input.classList.add('input-success');
+      input.setAttribute('aria-invalid', 'false');
+    }
+
+    // Validate all fields
+    async function validateForm() {
+      const isNameValid = validateName();
+      const isEmailValid = validateEmail();
+      const isPasswordValid = validatePassword();
+      const isConfirmPasswordValid = validateConfirmPassword();
+      const isRoleValid = validateRole();
+      
+      // Only check email existence if email is valid
+      let isEmailExists = false;
+      if (isEmailValid) {
+        isEmailExists = await checkEmailExists();
+      }
+      
+      const isValid = isNameValid && isEmailValid && !isEmailExists && 
+                     isPasswordValid && isConfirmPasswordValid && isRoleValid;
+      
+      submitBtn.disabled = !isValid;
+      return isValid;
+    }
+
+    // Event Listeners
+    nameInput.addEventListener('input', () => {
+      validateName();
+      validateForm();
+    });
+
+    emailInput.addEventListener('input', async () => {
+      validateEmail();
+      if (validateEmail()) {
+        await checkEmailExists();
+      }
+      validateForm();
+    });
+
+    passwordInput.addEventListener('input', () => {
+      validatePassword();
+      // Re-validate confirm password when password changes
+      if (confirmPasswordInput.value) {
+        validateConfirmPassword();
+      }
+      validateForm();
+    });
+
+    confirmPasswordInput.addEventListener('input', () => {
+      validateConfirmPassword();
+      validateForm();
+    });
+
+    roleSelect.addEventListener('change', () => {
+      validateRole();
+      validateForm();
+    });
+
+    // Toggle password visibility
+    passwordToggle.addEventListener('click', () => togglePasswordVisibility(passwordInput, passwordToggle));
+    confirmPasswordToggle.addEventListener('click', () => togglePasswordVisibility(confirmPasswordInput, confirmPasswordToggle));
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const isValid = await validateForm();
+      
+      if (isValid) {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Creating Account...';
+        
+        // Submit the form
+        form.submit();
+      }
+    });
+
+    // Initial validation
+    validateForm();
+  </script>
+</body>
+</html>
+
+
+

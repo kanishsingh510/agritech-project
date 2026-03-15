@@ -1,0 +1,17 @@
+/* Minimal helpers to complement Tailwind */
+.btn-primary{ @apply bg-primary text-white rounded-lg px-4 py-2 hover:opacity-90; }
+.btn-secondary{ @apply border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50; }
+.btn-danger{ @apply border border-red-500 text-red-600 rounded-lg px-4 py-2 hover:bg-red-50; }
+.badge{ @apply absolute top-3 left-3 inline-flex text-xs px-2 py-1 rounded-full bg-primary/90 text-white; }
+.input{ @apply border rounded px-3 py-2; }
+.toast{ @apply bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow; }
+:root{ --primary:#3CB043 }
+.btn{ background:var(--primary); color:#fff; border-radius:.5rem; padding:.5rem 1rem }
+img{ display:block }
+
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script> tailwind.config = { theme: { extend: { colors: { primary: '#3CB043' } } } } </script>
+  <style> body{font-family:Inter,ui-sans-serif,system-ui;} </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mx-auto max-w-md bg-white rounded-2xl shadow p-8">
+      <h1 class="text-2xl font-semibold text-center">Welcome Back</h1>
+      <p class="text-center text-gray-500 mb-6">Login as Farmer or Buyer</p>
+      <form action="/login" method="POST" class="space-y-4" aria-label="Login Form">
+        <div>
+          <label class="block text-sm mb-1">Email</label>
+          <input name="email" type="email" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Password</label>
+          <input name="password" type="password" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Login as</label>
+          <select name="role" class="w-full border rounded px-3 py-2">
+            <option value="farmer">Farmer</option>
+            <option value="buyer">Buyer</option>
+          </select>
+        </div>
+        <button class="w-full bg-primary text-white rounded py-2 hover:opacity-90">Login</button>
+      </form>
+      <p class="text-center text-sm mt-4">No account? <a href="/signup" class="text-primary">Sign up</a></p>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+

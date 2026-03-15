@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product - AgriTech Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-green: #00A86B;
+            --primary-dark: #008B5A;
+            --bg-color: #F9FAFB;
+            --text-color: #333333;
+            --white: #FFFFFF;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+        }
+        
+        .sidebar__header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .sidebar__nav {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(0, 168, 107, 0.05);
+            color: var(--primary-green);
+        }
+        
+        .nav-item.active {
+            background: rgba(0, 168, 107, 0.1);
+            color: var(--primary-green);
+            border-left-color: var(--primary-green);
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.125rem;
+        }
+        
+        .nav-section {
+            margin-top: 2rem;
+        }
+        
+        .nav-section__title {
+            display: block;
+            padding: 0 1.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-500);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--primary-green);
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--gray-600);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-card {
+            background: var(--white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            max-width: 800px;
+        }
+        
+        .product-form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+        
+        .form-input, .form-select, textarea {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: var(--white);
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+        }
+        
+        .form-input:focus, .form-select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.1);
+        }
+        
+        .file-upload {
+            position: relative;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            border: 2px dashed var(--gray-300);
+            border-radius: 0.75rem;
+            background: var(--bg-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-height: 200px;
+        }
+        
+        .file-upload-label:hover {
+            border-color: var(--primary-green);
+            background: rgba(0, 168, 107, 0.05);
+        }
+        
+        .file-upload-label img {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .file-upload-label i {
+            font-size: 3rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+        
+        .file-upload-label span {
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-upload-label small {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn--primary {
+            background: var(--primary-green);
+            color: var(--white);
+        }
+        
+        .btn--primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn--secondary {
+            background: var(--white);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+        }
+        
+        .btn--secondary:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-400);
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__header">
+                <div class="logo">
+                    <i class="fas fa-seedling"></i>
+                    <span>AgriTech</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar__nav">
+                <a href="/products" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/products/new" class="nav-item active">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Product</span>
+                </a>
+                <div class="nav-section">
+                    <span class="nav-section__title">Categories</span>
+                    <a href="/products?category=fruits" class="nav-item">
+                        <i class="fas fa-apple-alt"></i>
+                        <span>Fruits</span>
+                    </a>
+                    <a href="/products?category=vegetables" class="nav-item">
+                        <i class="fas fa-carrot"></i>
+                        <span>Vegetables</span>
+                    </a>
+                    <a href="/products?category=dairy" class="nav-item">
+                        <i class="fas fa-cheese"></i>
+                        <span>Dairy</span>
+                    </a>
+                    <a href="/products?category=grains" class="nav-item">
+                        <i class="fas fa-seedling"></i>
+                        <span>Grains</span>
+                    </a>
+                    <a href="/products?category=spices" class="nav-item">
+                        <i class="fas fa-pepper-hot"></i>
+                        <span>Spices</span>
+                    </a>
+                    <a href="/products?category=organic" class="nav-item">
+                        <i class="fas fa-leaf"></i>
+                        <span>Organic</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <a href="/products" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Products
+                    </a>
+                    <h1 class="page-title">Add New Product</h1>
+                    <p class="page-subtitle">Create a new agricultural product listing</p>
+                </div>
+            </header>
+
+            <!-- Form Card -->
+            <div class="form-card">
+                <form action="/products" method="post" enctype="multipart/form-data" class="product-form">
+                    <div class="form-group">
+                        <label for="image" class="form-label">
+                            <i class="fas fa-camera"></i>
+                            Product Image
+                        </label>
+                        <div class="file-upload">
+                            <input type="file" name="image" id="image" accept="image/*" class="file-input" />
+                            <label for="image" class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Choose an image or drag it here</span>
+                                <small>Supports: JPG, PNG, GIF, WebP (Max 5MB)</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Product Name
+                            </label>
+                            <input type="text" name="name" id="name" class="form-input" placeholder="e.g., Fresh Alphonso Mangoes" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price" class="form-label">
+                                <i class="fas fa-rupee-sign"></i>
+                                Price (₹)
+                            </label>
+                            <input type="number" name="price" id="price" class="form-input" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category" class="form-label">
+                                <i class="fas fa-layer-group"></i>
+                                Category
+                            </label>
+                            <select name="category" id="category" class="form-select" required>
+                                <option value="">Select a category</option>
+                                <% for(let category of categories){ %>
+                                    <option value="<%=category%>"><%=category.charAt(0).toUpperCase() + category.slice(1)%></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity" class="form-label">
+                                <i class="fas fa-weight"></i>
+                                Quantity
+                            </label>
+                            <input type="text" name="quantity" id="quantity" class="form-input" placeholder="e.g., 1 kg, 1 litre, 1 dozen" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            Description
+                        </label>
+                        <textarea name="description" id="description" class="form-input" rows="3" placeholder="Describe your product (max 200 characters)" maxlength="200" required></textarea>
+                        <div class="text-right text-sm text-gray-500">
+                            <span id="char-count">0</span>/200
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-leaf"></i>
+                            Product Type
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="isOrganic" id="isOrganic" class="mr-2">
+                                <span>Organic Product</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/products" class="btn btn--secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn--primary">
+                            <i class="fas fa-plus"></i>
+                            Create Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // File upload preview
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const label = document.querySelector('.file-upload-label');
+                    label.innerHTML = `
+                        <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                        <span>${file.name}</span>
+                        <small>Click to change image</small>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Price validation and formatting
+        document.getElementById('price').addEventListener('blur', function(e) {
+            const value = parseFloat(e.target.value);
+            if (!isNaN(value)) {
+                e.target.value = value.toFixed(2);
+            }
+        });
+
+        // Form submission validation
+        document.querySelector('.product-form').addEventListener('submit', function(e) {
+            const priceInput = document.getElementById('price');
+            const price = parseFloat(priceInput.value);
+            
+            if (!isNaN(price)) {
+                priceInput.value = price.toFixed(2);
+            }
+        });
+
+        // Character counter for description
+        document.getElementById('description').addEventListener('input', function(e) {
+            const charCount = e.target.value.length;
+            document.getElementById('char-count').textContent = charCount;
+            
+            if (charCount > 180) {
+                document.getElementById('char-count').style.color = '#ef4444';
+            } else {
+                document.getElementById('char-count').style.color = '#6b7280';
+            }
+        });
+    </script>
+</body>
+</html>

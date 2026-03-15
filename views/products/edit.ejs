@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - AgriTech Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Additional styles for edit product page */
+        .edit-product {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .back-link i {
+            margin-right: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 0.5rem;
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: var(--gray-50);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background-color: white;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-100);
+            margin-top: 2rem;
+        }
+
+        /* Image upload styles */
+        .image-upload {
+            margin-bottom: 2rem;
+        }
+
+        .image-upload-preview {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--gray-50);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-upload-preview:hover {
+            border-color: var(--primary);
+            background-color: var(--primary-light-10);
+        }
+
+        .image-upload-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .image-upload-preview.has-image img {
+            display: block;
+        }
+
+        .image-upload-preview.has-image .upload-content {
+            display: none;
+        }
+
+        .upload-content i {
+            font-size: 2.5rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+
+        .upload-content h4 {
+            margin: 0 0 0.5rem;
+            color: var(--gray-700);
+        }
+
+        .upload-content p {
+            margin: 0;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .image-upload-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            margin-left: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar__header">
+            <a href="/" class="logo">
+                <i class="fas fa-leaf"></i>
+                <span>AgriTech</span>
+            </a>
+            <button class="menu-toggle d-lg-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar__nav">
+            <a href="/farmer/dashboard" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/products/new" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Product</span>
+            </a>
+            <div class="nav-section">
+                <div class="nav-section__title">Categories</div>
+                <a href="/products" class="nav-item" data-category="all">
+                    <i class="fas fa-th-large"></i>
+                    <span>All Products</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.length : '0' %></span>
+                </a>
+                <a href="/products?category=fruits" class="nav-item" data-category="fruits">
+                    <i class="fas fa-apple-alt"></i>
+                    <span>Fruits</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.filter(p => p.category === 'fruits').length : '0' %></span>
+                </a>
+                <a href="/products?category=vegetables" class="nav-item" data-category="vegetables">
+                    <i class="fas fa-carrot"></i>
+                    <span>Vegetables</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.filter(p => p.category === 'vegetables').length : '0' %></span>
+                </a>
+                <a href="/products?category=dairy" class="nav-item" data-category="dairy">
+                    <i class="fas fa-cheese"></i>
+                    <span>Dairy</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.filter(p => p.category === 'dairy').length : '0' %></span>
+                </a>
+                <a href="/products?category=grains" class="nav-item" data-category="grains">
+                    <i class="fas fa-bread-slice"></i>
+                    <span>Grains</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.filter(p => p.category === 'grains').length : '0' %></span>
+                </a>
+                <a href="/products?category=spices" class="nav-item" data-category="spices">
+                    <i class="fas fa-pepper-hot"></i>
+                    <span>Spices</span>
+                    <span class="badge bg-primary-light text-primary"><%= typeof products !== 'undefined' ? products.filter(p => p.category === 'spices').length : '0' %></span>
+                </a>
+                <a href="/products?organic=true" class="nav-item" data-category="organic">
+                    <i class="fas fa-seedling"></i>
+                    <span>Organic</span>
+                    <span class="badge bg-success-light text-success"><%= typeof products !== 'undefined' ? products.filter(p => p.organic).length : '0' %></span>
+                </a>
+            </div>
+        </nav>
+        <div class="sidebar__footer mt-auto">
+            <a href="/profile" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="/logout" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+    <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="/products" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Products
+                </a>
+            </div>
+            <div class="header-actions">
+                <a href="/products/new" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Product</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="edit-product">
+            <a href="/products" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Products
+            </a>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <h1 class="form-title">Edit Product</h1>
+                </div>
+
+                <form action="/products/<%= product._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                    <!-- Image Upload Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-image"></i> Product Image
+                        </h3>
+                        <div class="image-upload">
+                            <div class="image-upload-preview" id="imagePreview" style="<%= product.image ? 'background-image: url(' + product.image + '); background-size: cover; background-position: center;' : '' %>">
+                                <div class= "upload-content">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h4>Click to upload image</h4>
+                                    <p>JPG, PNG, or WebP (max. 5MB)</p>
+                                </div>
+                                <img id="previewImage" src="<%= product.image || '' %>" alt="Preview">
+                            </div>
+                            <input type="file" id="image" name="image" accept="image/*" style="display: none;">
+                            <div class="image-upload-actions">
+                                <button type="button" class="btn btn-outline" id="changeImageBtn">
+                                    <i class="fas fa-sync-alt"></i> Change Image
+                                </button>
+                                <button type="button" class="btn btn-text text-danger" id="removeImageBtn">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i> Basic Information
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Product Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-control" id="category" name="category" required>
+                                    <option value="" disabled>Select a category</option>
+                                    <option value="fruits" <%= product.category === 'fruits' ? 'selected' : '' %>>Fruits</option>
+                                    <option value="vegetables" <%= product.category === 'vegetables' ? 'selected' : '' %>>Vegetables</option>
+                                    <option value="dairy" <%= product.category === 'dairy' ? 'selected' : '' %>>Dairy</option>
+                                    <option value="grains" <%= product.category === 'grains' ? 'selected' : '' %>>Grains</option>
+                                    <option value="spices" <%= product.category === 'spices' ? 'selected' : '' %>>Spices</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter product description..."><%= product.description %></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Pricing & Inventory -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-tag"></i> Pricing & Inventory
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="price" class="form-label">Price (₹) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="<%= product.price %>" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity" class="form-label">Quantity *</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" min="0" value="<%= product.quantity %>" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-tag"></i> Additional Information
+                        </h3>
+                        <div class="form-group">
+                            <div class="d-flex align-items-center">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="isOrganic" name="isOrganic" <%= product.isOrganic ? 'checked' : '' %>>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="toggle-label">Mark as Organic Product</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <a href="/products/<%= product._id %>" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2
+        $('#tags').select2({
+            placeholder: 'Select tags',
+            allowClear: true,
+            width: '100%',
+            theme: 'bootstrap-5'
+        });
+
+        // File upload preview
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        const changeImageBtn = document.getElementById('changeImage');
+        const removeImageBtn = document.getElementById('removeImage');
+        const defaultImage = imagePreview.style.backgroundImage;
+
+        // Change image
+        if (changeImageBtn) {
+            changeImageBtn.addEventListener('click', () => {
+                imageInput.click();
+            });
+        }
+
+        // Remove image
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                imagePreview.style.backgroundImage = "url('/img/placeholder-product.jpg')";
+                imageInput.value = '';
+                
+                // Show upload overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+                overlay.innerHTML = `
+                    <i class="fas fa-camera"></i>
+                    <p>Click to change image</p>
+                `;
+                imagePreview.innerHTML = '';
+                imagePreview.appendChild(overlay);
+            });
+        }
+
+        // Preview image
+        if (imageInput) {
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Check file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should not exceed 5MB');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        imagePreview.style.backgroundImage = `url(${event.target.result})`;
+                        imagePreview.innerHTML = '';
+                        
+                        // Add overlay back
+                        const overlay = document.createElement('div');
+                        overlay.className = 'overlay';
+                        overlay.innerHTML = `
+                            <i class="fas fa-camera"></i>
+                            <p>Click to change image</p>
+                        `;
+                        imagePreview.appendChild(overlay);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Click on preview to upload
+        if (imagePreview) {
+            imagePreview.addEventListener('click', () => {
+                imageInput.click();
+            });
+        }
+
+        // Mobile menu toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                document.body.classList.toggle('sidebar-open');
+                
+                // Toggle icon between bars and times
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        
+        // Price formatting on form submission
+        const productForm = document.querySelector('form');
+        if (productForm) {
+            productForm.addEventListener('submit', function(e) {
+                const priceInput = document.getElementById('price');
+                if (priceInput) {
+                    const price = parseFloat(priceInput.value);
+                    if (!isNaN(price)) {
+                        priceInput.value = price.toFixed(2);
+                    }
+                }
+            });
+        }
+    }});
+    </script>
+</body>
+</html>

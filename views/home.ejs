@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriTech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="/imgs/image-1760275052812-835083673.jpeg" />
+  <meta name="color-scheme" content="light" />
+  <script>
+    tailwind.config = { theme: { extend: { colors: { primary: '#3CB043', accent: '#2D6A4F' } } } }
+  </script>
+  <style>
+    body {
+      background: white;
+      font-family: Inter, ui-sans-serif, system-ui;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+  <header class="bg-white/90 backdrop-blur shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold">Ag</span>
+        <span class="font-semibold text-lg">AgriTech</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="/buyer/marketplace" class="hover:text-primary">Marketplace</a>
+        <a href="/farmer/dashboard" class="hover:text-primary">Dashboard</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="/login" class="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-90">Login</a>
+        <a href="/signup"
+          class="px-3 py-2 rounded-lg border border-primary text-primary text-sm hover:bg-primary hover:text-white">Sign
+          up</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 py-14 md:py-20 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-semibold leading-tight">Fresh produce from Indian farmers to your doorstep
+        </h1>
+        <p class="mt-4 text-gray-600">Transparent pricing, direct trade, and a better deal for farmers and buyers.</p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="/buyer/marketplace" class="btn-primary">Explore Marketplace</a>
+          <a href="/farmer/dashboard" class="btn-secondary">Farmer Dashboard</a>
+        </div>
+      </div>
+      <div class="relative">
+        <img class="rounded-2xl shadow-lg w-full object-cover aspect-[4/3]"
+          src="https://images.unsplash.com/photo-1524594154908-edd3474e9b52?q=80&w=1200&auto=format&fit=crop"
+          alt="Farm produce" />
+        <div class="absolute -bottom-4 -left-4 bg-white rounded-xl shadow px-4 py-3 text-sm hidden md:block">
+          <div class="font-semibold text-primary">Fair Prices • Fresh Produce</div>
+          <div class="text-gray-500">Direct from farmers</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t bg-white">
+    <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+      <div>
+        <div class="font-semibold mb-2">About</div>
+        <p class="text-gray-500">AgriTech connects farmers and buyers to enable fair, fresh, and local trade.</p>
+      </div>
+      <div>
+        <div class="font-semibold mb-2">Contact</div>
+        <p class="text-gray-500">Email: support@agritech.demo</p>
+      </div>
+      <div>
+        <div class="font-semibold mb-2">College Project</div>
+        <p class="text-gray-500">Demo application built for academic submission.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>
