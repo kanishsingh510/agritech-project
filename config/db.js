@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
@@ -7,10 +7,9 @@ const connectDB = async () => {
       useUnifiedTopology: true
     });
 
-    console.log("MongoDB Connected (Atlas Cloud)");
-
+    console.log("✅ MongoDB Connected (Atlas Cloud)");
   } catch (error) {
-    console.error("MongoDB Atlas connection failed:", error.message);
+    console.error("❌ MongoDB Atlas connection failed:", error.message);
     process.exit(1);
   }
 };

@@ -276,45 +276,9 @@
 
     // Buy Now functionality
     document.querySelectorAll('.buyBtn').forEach(btn => {
-      btn.addEventListener('click', async function() {
+      btn.addEventListener('click', function() {
         const productId = this.getAttribute('data-product-id');
-        try {
-          const res = await fetch('/payment/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId })
-          });
-          const data = await res.json();
-          
-          if (data.error) {
-            showFlashMessage(data.error, 'danger');
-            return;
-          }
-
-          const options = {
-            key: data.key,
-            amount: data.amount,
-            currency: data.currency,
-            name: 'AgriTech',
-            description: 'Order Payment',
-            order_id: data.orderId,
-            handler: async function (response) {
-              const verifyRes = await fetch('/payment/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(response)
-              });
-              const verifyData = await verifyRes.json();
-              if (verifyData.success) {
-                window.location.href = '/buyer/dashboard';
-              }
-            }
-          };
-          new Razorpay(options).open();
-        } catch (error) {
-          console.error('Error:', error);
-          showFlashMessage('Error processing payment', 'danger');
-        }
+        window.location.href = '/buyer/checkout/' + productId;
       });
     });
 

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Notifications - AgriTech</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="#"><i class="fas fa-bell me-2"></i>Notifications</a>
+      <div class="ms-auto">
+        <a href="<%= user.role === 'farmer' ? '/farmer/dashboard' : '/buyer/dashboard' %>" class="text-white text-decoration-none">
+          <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+      <div class="card-header bg-white border-bottom">
+        <h5 class="mb-0">Your Notifications</h5>
+      </div>
+      <div class="list-group list-group-flush">
+        <% if (notifications.length === 0) { %>
+          <div class="list-group-item text-center py-4 text-muted">
+            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+            <p class="mb-0">You're all caught up!</p>
+          </div>
+        <% } else { %>
+          <% notifications.forEach(n => { %>
+            <div class="list-group-item py-3 <%= n.isRead ? '' : 'bg-light' %>">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">
+                  <% if (n.type === 'new_order') { %><i class="fas fa-basket-shopping text-warning me-2"></i>New Order<% } %>
+                  <% if (n.type === 'order_accepted') { %><i class="fas fa-check text-success me-2"></i>Order Accepted<% } %>
+                  <% if (n.type === 'order_rejected') { %><i class="fas fa-times text-danger me-2"></i>Order Rejected<% } %>
+                </h6>
+                <small class="text-muted"><%= new Date(n.createdAt).toLocaleDateString() %></small>
+              </div>
+              <p class="mb-1"><%= n.message %></p>
+              <% if (!n.isRead) { %>
+                <form action="/notifications/<%= n._id %>/read" method="POST" class="d-inline mt-2">
+                  <button type="submit" class="btn btn-sm btn-outline-success">Mark as Read</button>
+                </form>
+              <% } %>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

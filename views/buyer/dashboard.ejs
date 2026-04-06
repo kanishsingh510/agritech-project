@@ -95,7 +95,7 @@
   <div class="container">
     <h2 class="mb-4"><i class="fas fa-shopping-bag me-2"></i>My Purchases</h2>
 
-    <% if (transactions.length === 0) { %>
+    <% if (orders.length === 0) { %>
       <div class="card">
         <div class="card-body text-center py-5">
           <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
@@ -108,30 +108,32 @@
       </div>
     <% } else { %>
       <div class="row g-4">
-        <% transactions.forEach(t => { const p = t.productId || {}; %>
+        <% orders.forEach(o => { const p = o.productId || {}; %>
           <div class="col-md-6 col-lg-4">
             <div class="card product-card h-100">
               <div class="position-relative">
                 <img src="<%= p.image || p.imagePath || 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1200&auto=format&fit=crop' %>" 
                      class="card-img-top product-image" alt="<%= p.name || 'Product' %>">
-                <span class="badge status-badge bg-<%= t.paymentStatus === 'paid' ? 'success' : 'warning' %>">
-                  <%= t.paymentStatus.toUpperCase() %>
+                <% 
+                   let badgeColor = 'secondary';
+                   if(o.status === 'pending') badgeColor = 'warning text-dark';
+                   if(o.status === 'accepted') badgeColor = 'info text-dark';
+                   if(o.status === 'delivered') badgeColor = 'success';
+                   if(o.status === 'rejected') badgeColor = 'danger';
+                %>
+                <span class="badge status-badge bg-<%= badgeColor %>">
+                  <%= o.status.toUpperCase() %>
                 </span>
               </div>
               <div class="card-body">
                 <h5 class="card-title"><%= p.name || 'Product' %></h5>
-                <p class="text-muted small mb-2"><%= p.description || '' %></p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="h5 text-success mb-0">₹<%= Number(t.amount).toFixed(2) %></span>
-                  <small class="text-muted">
-                    <i class="fas fa-calendar me-1"></i><%= new Date(t.createdAt).toLocaleDateString() %>
-                  </small>
+                <p class="text-muted small mb-2"><%= o.quantity %> x <%= p.unit || 'unit' %></p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="h5 text-success mb-0">Total: ₹<%= Number(o.totalPrice).toFixed(2) %></span>
                 </div>
-                <% if (t.paymentId) { %>
-                  <small class="text-muted d-block mt-2">
-                    <i class="fas fa-receipt me-1"></i>Payment ID: <%= t.paymentId.slice(0, 10) %>...
-                  </small>
-                <% } %>
+                <small class="text-muted">
+                  <i class="fas fa-calendar me-1"></i><%= new Date(o.createdAt).toLocaleDateString() %>
+                </small>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Product = require('../models/product');
+const Notification = require('../models/Notification');
 
 const renderLogin = (req, res) => {
   if (req.session.user) {
@@ -167,6 +168,29 @@ const seedDemo = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const ensureAuth = (req, res, next) => {
+  if (!req.session.user) return res.redirect('/login');
+  next();
+};
+
+const getNotifications = async (req, res, next) => {
+  try {
+    const notifications = await Notification.find({ userId: req.session.user._id }).sort({ createdAt: -1 });
+    res.render('notifications', { user: req.session.user, notifications });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const markNotificationRead = async (req, res, next) => {
+  try {
+    await Notification.findByIdAndUpdate(req.params.id, { isRead: true });
+    res.redirect('/notifications');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = { 
   renderLogin, 
   renderSignup, 
@@ -175,7 +199,10 @@ module.exports = {
   logout, 
   seedDemo, 
   validateSignup, 
-  checkEmailExists 
+  checkEmailExists,
+  ensureAuth,
+  getNotifications,
+  markNotificationRead
 };
 
 

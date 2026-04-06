@@ -43,10 +43,15 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    stock: {
+      type: Number,
+      required: true,
+      default: 0
+    },
     farmerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: false
+      required: true
     },
     createdAt: {
       type: Date,

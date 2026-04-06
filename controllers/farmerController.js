@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const Product = require('../models/product');
+const Order = require('../models/Order');
+const Notification = require('../models/Notification');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -173,7 +175,60 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { upload, ensureFarmer, renderDashboard, getProductDetails, createProduct, updateProduct, deleteProduct };
+const renderOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ farmerId: req.session.user._id })
+      .populate('productId')
+      .sort({ createdAt: -1 });
+    res.render('farmer/orders', { user: req.session.user, orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // valid statuses: 'accepted', 'rejected', 'delivered'
+    const order = await Order.findOne({ _id: id, farmerId: req.session.user._id });
+    if (!order) return res.status(404).send('Order not found');
+
+    if (status === 'accepted' && order.status === 'pending') {
+      const product = await Product.findById(order.productId);
+      if (product) {
+        if (product.stock >= order.quantity) {
+          product.stock -= order.quantity;
+          await product.save();
+        } else {
+          // If strict stock handling, we would reject here if not enough stock
+          product.stock = 0; 
+          await product.save();
+        }
+      }
+    }
+
+    order.status = status;
+    await order.save();
+
+    // Notify buyer
+    const notif = new Notification({
+      userId: order.buyerId,
+      message: `Your order for ${order.quantity} items has been ${status}.`,
+      type: status === 'accepted' ? 'order_accepted' : (status === 'rejected' ? 'order_rejected' : 'general'),
+      relatedOrderId: order._id
+    });
+    await notif.save();
+
+    res.redirect('/farmer/orders');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error updating order');
+  }
+};
+
+module.exports = { upload, ensureFarmer, renderDashboard, getProductDetails, createProduct, updateProduct, deleteProduct, renderOrders, updateOrderStatus };
 
 
 
