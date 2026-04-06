@@ -1,0 +1,446 @@
+<% 
+if (typeof user === 'undefined') { user = null; }
+%>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Dashboard - AgriTech</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #1fb57f;
+      --primary-dark: #169a6d;
+      --primary-light: #e6f7f1;
+      --primary-green: #28a745;
+      --gray-100: #f8f9fa;
+      --gray-200: #e9ecef;
+      --gray-300: #dee2e6;
+      --gray-600: #6c757d;
+      --gray-800: #343a40;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .sidebar__header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      background: #f5f7fa;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 0;
+      margin-bottom: -3rem;
+      padding-bottom: 5rem;
+    }
+
+    .analytics-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    .analytics-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .analytics-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin-right: 1.25rem;
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar__header">
+        <a href="/farmer/dashboard" class="logo">
+          <i class="fas fa-seedling"></i>
+          <span>AgriTech</span>
+        </a>
+      </div>
+
+      <nav class="nav flex-column mt-4">
+        <a href="/farmer/dashboard" class="nav-link">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/farmer/orders" class="nav-link">
+          <i class="fas fa-shopping-basket"></i>
+          <span>Orders</span>
+        </a>
+        <a href="/farmer/analytics" class="nav-link active">
+          <i class="fas fa-chart-pie"></i>
+          <span>Analytics</span>
+        </a>
+
+        <div class="px-3 mt-3 mb-2 text-uppercase small fw-bold text-muted">Modes</div>
+        <a href="/buyer/marketplace" class="nav-link text-primary fw-bold mx-2 mb-2 rounded" style="background-color: var(--primary-light);">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Switch to Buyer Mode</span>
+        </a>
+      </nav>
+
+      <div class="mt-auto px-3 pt-3 border-top pb-3">
+        <div class="d-flex align-items-center mb-3">
+          <img
+            src="https://ui-avatars.com/api/?name=<%= user ? encodeURIComponent(user.name || 'F') : 'F' %>&background=1fb57f&color=fff"
+            alt="<%= user ? user.name : 'Farmer' %>" class="rounded-circle me-2" width="36" height="36">
+          <div>
+            <div class="fw-medium">
+              <%= user ? user.name : 'Farmer' %>
+            </div>
+            <small class="text-muted">Farmer</small>
+          </div>
+        </div>
+        <form action="/logout" method="POST" class="d-inline w-100">
+          <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="hero">
+        <div class="container px-4">
+          <h1 class="fw-bold mb-1">Analytics Overview</h1>
+          <p class="mb-0 opacity-75">Track your farm's performance and sales trends</p>
+        </div>
+      </div>
+
+      <div class="container px-4" style="margin-top: -2rem;">
+        <!-- Top Cards -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-3">
+            <div class="analytics-card">
+              <div class="analytics-icon text-success bg-success bg-opacity-10">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.75rem;">Total Revenue</h6>
+                <h3 class="mb-0 fw-bold" id="totalRevenue">₹0</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="analytics-card">
+              <div class="analytics-icon text-primary bg-primary bg-opacity-10">
+                <i class="fas fa-box-open"></i>
+              </div>
+              <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.75rem;">Orders Delivered</h6>
+                <h3 class="mb-0 fw-bold" id="deliveredCount">0</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="analytics-card">
+              <div class="analytics-icon text-info bg-info bg-opacity-10">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.75rem;">Products Sold</h6>
+                <h3 class="mb-0 fw-bold" id="productsSold">0</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="analytics-card">
+              <div class="analytics-icon text-warning bg-warning bg-opacity-10">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.75rem;">Pending Orders</h6>
+                <h3 class="mb-0 fw-bold" id="pendingCount">0</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <!-- Main Chart -->
+          <div class="col-lg-8">
+            <div class="chart-container">
+              <h5 class="fw-bold mb-4">Sales Trends (Revenue Map)</h5>
+              <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="salesTrendChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Pie Chart -->
+          <div class="col-lg-4">
+            <div class="chart-container">
+              <h5 class="fw-bold mb-4">Demand by Category</h5>
+              <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="categoryDemandChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+          <!-- Product Bar Chart -->
+          <div class="col-lg-6">
+            <div class="chart-container">
+              <h5 class="fw-bold mb-4">Top Performing Products</h5>
+              <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="productPerfChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Recent Orders Table -->
+          <div class="col-lg-6">
+            <div class="chart-container h-100 overflow-auto">
+              <h5 class="fw-bold mb-4">Recent Delivered Orders</h5>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Date</th>
+                      <th>Buyer</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentOrdersBody">
+                    <tr>
+                      <td colspan="3" class="text-center text-muted py-4">Loading orders...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('/farmer/api/analytics');
+        const data = await response.json();
+        
+        // Update Summary Cards
+        document.getElementById('totalRevenue').innerText = `₹${data.summary.totalRevenue.toLocaleString()}`;
+        document.getElementById('deliveredCount').innerText = data.summary.deliveredCount;
+        document.getElementById('productsSold').innerText = data.summary.productsSold;
+        document.getElementById('pendingCount').innerText = data.summary.pendingCount;
+
+        // Sales Trend Line Chart
+        const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        if (data.salesTrend.length === 0) {
+           trendCtx.font = "14px Arial";
+           trendCtx.textAlign = "center";
+           trendCtx.fillStyle = "#6c757d";
+           trendCtx.fillText("No sales trends available", 200, 150);
+        } else {
+          new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: data.salesTrend.map(t => t.date),
+              datasets: [{
+                label: 'Revenue (₹)',
+                data: data.salesTrend.map(t => t.revenue),
+                borderColor: '#1fb57f',
+                backgroundColor: 'rgba(31, 181, 127, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        }
+
+        // Category Demand Pie Chart
+        const pieCtx = document.getElementById('categoryDemandChart').getContext('2d');
+        if (data.categoryStats.length === 0) {
+           pieCtx.font = "14px Arial";
+           pieCtx.textAlign = "center";
+           pieCtx.fillStyle = "#6c757d";
+           pieCtx.fillText("No category data available", 150, 150);
+        } else {
+          new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+              labels: data.categoryStats.map(c => c.category.toUpperCase()),
+              datasets: [{
+                data: data.categoryStats.map(c => c.quantity),
+                backgroundColor: [
+                  '#1fb57f', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'
+                ]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: '60%',
+              plugins: {
+                legend: { position: 'bottom' }
+              }
+            }
+          });
+        }
+
+        // Product Performance Bar Chart
+        const barCtx = document.getElementById('productPerfChart').getContext('2d');
+        const topProducts = data.productStats.slice(0, 5); // display top 5
+        if (topProducts.length === 0) {
+           barCtx.font = "14px Arial";
+           barCtx.textAlign = "center";
+           barCtx.fillStyle = "#6c757d";
+           barCtx.fillText("No product data available", 150, 150);
+        } else {
+          new Chart(barCtx, {
+            type: 'bar',
+            data: {
+              labels: topProducts.map(p => p.name.substring(0, 15) + (p.name.length > 15 ? '...' : '')),
+              datasets: [{
+                label: 'Quantity Sold',
+                data: topProducts.map(p => p.quantitySold),
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        }
+
+        // Populate Table
+        const tbody = document.getElementById('recentOrdersBody');
+        tbody.innerHTML = '';
+        if (data.recentDelivered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">No delivered orders found.</td></tr>';
+        } else {
+          data.recentDelivered.forEach(order => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+              <td>
+                <div class="fw-bold">${order.buyerDetails.name}</div>
+                <small class="text-muted">${order.buyerDetails.phone}</small>
+              </td>
+              <td><span class="text-success fw-bold">₹${order.totalPrice}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+        
+      } catch (err) {
+        console.error('Failed to load analytics dashboard data:', err);
+      }
+    });
+  </script>
+</body>
+</html>

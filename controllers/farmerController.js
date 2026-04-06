@@ -227,7 +227,100 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { upload, ensureFarmer, renderDashboard, getProductDetails, createProduct, updateProduct, deleteProduct, renderOrders, updateOrderStatus };
+const renderAnalytics = async (req, res, next) => {
+  try {
+    res.render('farmer/analytics', { user: req.session.user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getAnalyticsData = async (req, res, next) => {
+  try {
+    const farmerIdStr = req.session.user._id.toString();
+    const farmerObjectId = new mongoose.Types.ObjectId(farmerIdStr);
+
+    // pending orders
+    const pendingCount = await Order.countDocuments({ farmerId: farmerIdStr, status: 'pending' });
+    
+    // delivered orders stats
+    const deliveredOrders = await Order.find({ farmerId: farmerIdStr, status: 'delivered' });
+    
+    let totalRevenue = 0;
+    let productsSold = 0;
+    
+    // Aggregate product sales
+    const productStats = await Order.aggregate([
+      { $match: { farmerId: farmerObjectId, status: 'delivered' } },
+      { $unwind: "$items" },
+      { $group: {
+          _id: "$items.productId",
+          quantitySold: { $sum: "$items.quantity" },
+          revenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } }
+      }},
+      { $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product"
+      }},
+      { $unwind: "$product" },
+      { $project: {
+          name: "$product.name",
+          category: "$product.category",
+          quantitySold: 1,
+          revenue: 1
+      }},
+      { $sort: { quantitySold: -1 } }
+    ]);
+
+    const categorySalesMap = {};
+    productStats.forEach(stat => {
+      productsSold += stat.quantitySold;
+      const cat = stat.category || 'Uncategorized';
+      if (!categorySalesMap[cat]) categorySalesMap[cat] = 0;
+      categorySalesMap[cat] += stat.quantitySold;
+    });
+
+    const salesTrendRaw = await Order.aggregate([
+      { $match: { farmerId: farmerObjectId, status: 'delivered' } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalPrice" }
+      }},
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const salesTrend = salesTrendRaw.map(t => {
+      totalRevenue += t.revenue;
+      return { date: t._id, revenue: t.revenue };
+    });
+
+    // Recent 5 delivered orders
+    const recentDelivered = await Order.find({ farmerId: farmerObjectId, status: 'delivered' })
+      .populate('items.productId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    res.json({
+      summary: {
+        totalRevenue,
+        deliveredCount: deliveredOrders.length,
+        productsSold,
+        pendingCount
+      },
+      productStats,
+      categoryStats: Object.entries(categorySalesMap).map(([cat, qty]) => ({ category: cat, quantity: qty })),
+      salesTrend,
+      recentDelivered
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+};
+
+module.exports = { upload, ensureFarmer, renderDashboard, getProductDetails, createProduct, updateProduct, deleteProduct, renderOrders, updateOrderStatus, renderAnalytics, getAnalyticsData };
 
 
 
