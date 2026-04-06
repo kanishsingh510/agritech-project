@@ -51,11 +51,27 @@ const renderCheckout = async (req, res, next) => {
 const placeOrder = async (req, res, next) => {
   try {
     const { productId, name, phone, address, quantity } = req.body;
+    
+    // Validations
+    if (!name || !/^[A-Za-z\s]+$/.test(name)) {
+      return res.status(400).send('Invalid name: only alphabetic characters allowed');
+    }
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+      return res.status(400).send('Invalid phone: must be a 10-digit Indian phone number starting with 6-9');
+    }
+    if (!address || address.trim() === '') {
+      return res.status(400).send('Address is required');
+    }
+
     const qty = Number(quantity);
     if (qty < 1) return res.status(400).send('Invalid quantity');
 
     const product = await Product.findById(productId);
     if (!product) return res.status(404).send('Product not found');
+    
+    if (qty > product.stock) {
+      return res.status(400).send('Low stock available');
+    }
     
     const totalPrice = product.price * qty;
 

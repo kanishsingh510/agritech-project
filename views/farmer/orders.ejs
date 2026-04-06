@@ -59,6 +59,7 @@
                     <td>
                       <%= order.quantity %> x <%= order.productId ? order.productId.unit : '' %><br>
                       <small class="text-success fw-bold">₹<%= order.totalPrice %></small>
+                      <br><small class="text-muted">Payment: <%= order.paymentMethod %></small>
                     </td>
                     <td>
                       <% 

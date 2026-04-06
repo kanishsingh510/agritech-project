@@ -16,11 +16,6 @@ const productSchema = new mongoose.Schema(
       lowercase: true,
       enum: ["fruits", "vegetables", "dairy", "grains", "spices", "organic"]
     },
-    quantity: {
-      type: String,
-      required: true,
-      default: "1 kg"
-    },
     unit: {
       type: String,
       enum: ["kg", "litre", "dozen", "piece"],
@@ -47,6 +42,11 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0
+    },
+    lowStockThreshold: {
+      type: Number,
+      required: true,
+      default: 5
     },
     farmerId: {
       type: mongoose.Schema.Types.ObjectId,

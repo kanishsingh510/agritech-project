@@ -88,12 +88,13 @@ const getProductDetails = async (req, res, next) => {
 
 const createProduct = async (req, res, next) => {
   try {
-    const { name, category, price, quantity, unit, description, isOrganic } = req.body;
+    const { name, category, price, stock, lowStockThreshold, unit, description, isOrganic } = req.body;
     const product = new Product({
       name,
       category,
       price: Number(price),
-      quantity: quantity,
+      stock: Number(stock) || 0,
+      lowStockThreshold: Number(lowStockThreshold) || 5,
       unit,
       description,
       isOrganic: isOrganic === 'on' || isOrganic === true,
@@ -120,12 +121,17 @@ const updateProduct = async (req, res, next) => {
 
     const updates = { ...req.body };
     if (updates.price) updates.price = Number(updates.price);
+    if (updates.stock) updates.stock = Number(updates.stock);
+    if (updates.lowStockThreshold) updates.lowStockThreshold = Number(updates.lowStockThreshold);
+    
+    // Explicitly prevent clearing the image if no new file is provided
+    delete updates.image;
+    delete updates.imagePath;
 
     // Handle isOrganic checkbox
     if (updates.isOrganic) {
       updates.isOrganic = updates.isOrganic === 'on' || updates.isOrganic === true;
     } else {
-      // If unchecked, it might be missing from body entirely
       updates.isOrganic = false;
     }
 
@@ -191,7 +197,6 @@ const updateOrderStatus = async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.body;
     
-    // valid statuses: 'accepted', 'rejected', 'delivered'
     const order = await Order.findOne({ _id: id, farmerId: req.session.user._id });
     if (!order) return res.status(404).send('Order not found');
 
@@ -199,27 +204,21 @@ const updateOrderStatus = async (req, res, next) => {
       const product = await Product.findById(order.productId);
       if (product) {
         if (product.stock >= order.quantity) {
-          product.stock -= order.quantity;
-          await product.save();
+          // Atomically decrement stock
+          await Product.updateOne(
+            { _id: product._id },
+            { $inc: { stock: -order.quantity } }
+          );
         } else {
-          // If strict stock handling, we would reject here if not enough stock
-          product.stock = 0; 
-          await product.save();
+          return res.status(400).send('Cannot accept order: Product stock is insufficient.');
         }
+      } else {
+        return res.status(400).send('Product not found.');
       }
     }
 
     order.status = status;
     await order.save();
-
-    // Notify buyer
-    const notif = new Notification({
-      userId: order.buyerId,
-      message: `Your order for ${order.quantity} items has been ${status}.`,
-      type: status === 'accepted' ? 'order_accepted' : (status === 'rejected' ? 'order_rejected' : 'general'),
-      relatedOrderId: order._id
-    });
-    await notif.save();
 
     res.redirect('/farmer/orders');
   } catch (err) {

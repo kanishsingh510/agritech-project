@@ -581,15 +581,19 @@ if (typeof deleted === 'undefined') { deleted = false; }
                     <option value="organic">Organic</option>
                   </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <label class="form-label">Price (₹) *</label>
                   <input type="number" name="price" class="form-control" step="0.01" min="0" required>
                 </div>
-                <div class="col-md-4">
-                  <label class="form-label">Quantity *</label>
-                  <input type="text" name="quantity" class="form-control" placeholder="e.g., 1 kg" required>
+                <div class="col-md-3">
+                  <label class="form-label">Stock *</label>
+                  <input type="number" name="stock" class="form-control" min="0" placeholder="e.g., 50" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                  <label class="form-label">Min Threshold</label>
+                  <input type="number" name="lowStockThreshold" class="form-control" min="0" value="5">
+                </div>
+                <div class="col-md-3">
                   <label class="form-label">Unit</label>
                   <select name="unit" class="form-select">
                     <option value="kg">kg</option>
@@ -651,10 +655,14 @@ if (typeof deleted === 'undefined') { deleted = false; }
                     <span class="category-badge">
                       <%= product.category || 'uncategorized' %>
                     </span>
+                    <% if (Number(product.stock) <= Number(product.lowStockThreshold)) { %>
+                      <span class="badge bg-danger position-absolute top-0 end-0 m-2 mt-5">Low Stock</span>
+                    <% } %>
                     <div class="product-actions">
                       <button type="button" class="action-btn open-edit-btn" title="Edit" data-id="<%= product._id %>"
                         data-name="<%= product.name %>" data-category="<%= product.category %>"
-                        data-price="<%= product.price %>" data-quantity="<%= product.quantity %>"
+                        data-price="<%= product.price %>" data-stock="<%= product.stock %>"
+                        data-lowstockthreshold="<%= product.lowStockThreshold %>"
                         data-unit="<%= product.unit %>"
                         data-description="<%= product.description || '' %>"
                         data-isorganic="<%= product.isOrganic ? '1' : '0' %>"
@@ -683,10 +691,8 @@ if (typeof deleted === 'undefined') { deleted = false; }
                         <span class="product-price">₹<%= product.price %></span>
                         <span class="product-stock ms-2">/ <%= product.unit || 'kg' %></span>
                       </div>
-                      <span class="product-stock">
-                        <i class="fas fa-box"></i>
-                        <%= product.quantity %>
-                          <%= product.unit || 'kg' %>
+                      <span class="product-stock text-dark fw-bold">
+                        <i class="fas fa-box me-1"></i> Stock: <%= product.stock %> <%= product.unit || 'kg' %>
                       </span>
                     </div>
                     <a href="/farmer/products/<%= product._id %>" class="btn-view">
@@ -728,15 +734,19 @@ if (typeof deleted === 'undefined') { deleted = false; }
                     <option value="organic">Organic</option>
                   </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <label class="form-label">Price (₹) *</label>
                   <input type="number" name="price" id="editPrice" class="form-control" step="0.01" min="0" required>
                 </div>
-                <div class="col-md-4">
-                  <label class="form-label">Quantity *</label>
-                  <input type="text" name="quantity" id="editQuantity" class="form-control" required>
+                <div class="col-md-3">
+                  <label class="form-label">Stock *</label>
+                  <input type="number" name="stock" id="editStock" class="form-control" min="0" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                  <label class="form-label">Min Threshold</label>
+                  <input type="number" name="lowStockThreshold" id="editLowStockThreshold" class="form-control" min="0">
+                </div>
+                <div class="col-md-3">
                   <label class="form-label">Unit</label>
                   <select name="unit" id="editUnit" class="form-select">
                     <option value="kg">kg</option>
@@ -928,7 +938,8 @@ if (typeof deleted === 'undefined') { deleted = false; }
             var name = this.dataset.name || '';
             var category = this.dataset.category || '';
             var price = this.dataset.price || '';
-            var quantity = this.dataset.quantity || '';
+            var stock = this.dataset.stock || '0';
+            var lowStockThreshold = this.dataset.lowstockthreshold || '5';
             var unit = this.dataset.unit || '';
             var description = this.dataset.description || '';
             var isOrganic = this.dataset.isorganic === '1';
@@ -940,7 +951,8 @@ if (typeof deleted === 'undefined') { deleted = false; }
             if (elById('editName')) elById('editName').value = name;
             if (elById('editCategory')) elById('editCategory').value = category;
             if (elById('editPrice')) elById('editPrice').value = price;
-            if (elById('editQuantity')) elById('editQuantity').value = quantity;
+            if (elById('editStock')) elById('editStock').value = stock;
+            if (elById('editLowStockThreshold')) elById('editLowStockThreshold').value = lowStockThreshold;
             if (elById('editUnit')) elById('editUnit').value = unit || 'kg';
             if (elById('editDescription')) elById('editDescription').value = description;
             if (elById('editIsOrganic')) elById('editIsOrganic').checked = isOrganic;
