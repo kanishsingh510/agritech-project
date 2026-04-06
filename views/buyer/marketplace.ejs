@@ -204,7 +204,7 @@
                 <button class="btn btn-success buyBtn" data-product-id="<%= p._id %>">
                   <i class="fas fa-shopping-bag me-2"></i>Buy Now
                 </button>
-                <button class="btn btn-outline-success addToCartBtn" data-product-id="<%= p._id %>" data-product-name="<%= p.name %>" data-product-price="<%= p.price %>" data-product-image="<%= p.image || p.imagePath || '' %>">
+                <button class="btn btn-outline-success addToCartBtn" data-product-id="<%= p._id %>" data-product-name="<%= p.name %>" data-product-price="<%= p.price %>" data-product-image="<%= p.image || p.imagePath || '' %>" data-farmer-id="<%= p.farmerId?._id || p.farmerId %>" data-stock="<%= p.stock %>">
                   <i class="fas fa-cart-plus me-2"></i>Add to Cart
                 </button>
               </div>
@@ -267,12 +267,16 @@
         const productName = this.getAttribute('data-product-name');
         const productPrice = this.getAttribute('data-product-price');
         const productImage = this.getAttribute('data-product-image');
+        const farmerId = this.getAttribute('data-farmer-id');
+        const stock = this.getAttribute('data-stock');
         
         addToCart({
           id: productId,
           name: productName,
           price: parseFloat(productPrice),
-          image: productImage
+          image: productImage,
+          farmerId: farmerId,
+          stock: parseInt(stock) || 0
         });
       });
     });

@@ -44,11 +44,19 @@
                   <tr>
                     <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
                     <td>
-                      <div class="d-flex align-items-center">
-                        <% if(order.productId && order.productId.image) { %>
-                          <img src="<%= order.productId.image %>" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                        <% } %>
-                        <strong><%= order.productId ? order.productId.name : 'Unknown Product' %></strong>
+                      <div class="d-flex flex-column gap-2">
+                        <% const items = order.items || [];
+                           items.forEach(item => { const p = item.productId || {}; %>
+                          <div class="d-flex align-items-center border-bottom pb-1">
+                            <% if(p.image) { %>
+                              <img src="<%= p.image %>" class="rounded me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                            <% } %>
+                            <div>
+                              <strong><%= p.name || 'Unknown' %></strong>
+                              <br><small class="text-muted"><%= item.quantity %> <%= p.unit || 'units' %> x ₹<%= item.price %></small>
+                            </div>
+                          </div>
+                        <% }) %>
                       </div>
                     </td>
                     <td>
@@ -57,8 +65,7 @@
                       <div><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i><%= order.buyerDetails.address %></small></div>
                     </td>
                     <td>
-                      <%= order.quantity %> x <%= order.productId ? order.productId.unit : '' %><br>
-                      <small class="text-success fw-bold">₹<%= order.totalPrice %></small>
+                      <small class="text-success fw-bold fs-6">₹<%= order.totalPrice %></small>
                       <br><small class="text-muted">Payment: <%= order.paymentMethod %></small>
                     </td>
                     <td>

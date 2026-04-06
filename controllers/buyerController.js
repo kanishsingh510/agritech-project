@@ -27,7 +27,7 @@ const renderMarketplace = async (req, res, next) => {
 
 const renderDashboard = async (req, res, next) => {
   try {
-    const orders = await Order.find({ buyerId: req.session.user._id }).populate('productId').sort({ createdAt: -1 });
+    const orders = await Order.find({ buyerId: req.session.user._id }).populate('items.productId').sort({ createdAt: -1 });
     res.render('buyer/dashboard', { orders });
   } catch (err) {
     next(err);
@@ -56,8 +56,8 @@ const placeOrder = async (req, res, next) => {
     if (!name || !/^[A-Za-z\s]+$/.test(name)) {
       return res.status(400).send('Invalid name: only alphabetic characters allowed');
     }
-    if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
-      return res.status(400).send('Invalid phone: must be a 10-digit Indian phone number starting with 6-9');
+    if (!phone || !/^[0-9]{10}$/.test(phone)) {
+      return res.status(400).send('Enter valid 10-digit phone number');
     }
     if (!address || address.trim() === '') {
       return res.status(400).send('Address is required');
@@ -76,12 +76,17 @@ const placeOrder = async (req, res, next) => {
     const totalPrice = product.price * qty;
 
     const order = new Order({
-      productId: product._id,
       farmerId: product.farmerId,
       buyerId: req.session.user._id,
+      items: [{
+        productId: product._id,
+        quantity: qty,
+        price: product.price
+      }],
       buyerDetails: { name, phone, address },
-      quantity: qty,
-      totalPrice
+      totalPrice,
+      paymentMethod: 'COD',
+      status: 'pending'
     });
     await order.save();
 
@@ -99,7 +104,78 @@ const placeOrder = async (req, res, next) => {
   }
 };
 
-module.exports = { ensureBuyer, renderMarketplace, renderDashboard, renderCart, renderCheckout, placeOrder };
+const processCartCheckout = async (req, res, next) => {
+  try {
+    const { cart, buyerDetails } = req.body;
+    
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
+    }
+    if (!buyerDetails || !buyerDetails.name || !buyerDetails.phone || !buyerDetails.address) {
+      return res.status(400).json({ error: 'Incomplete buyer details' });
+    }
+    if (!/^[a-zA-Z\s]+$/.test(buyerDetails.name)) {
+      return res.status(400).json({ error: 'Name should contain only characters' });
+    }
+    if (!/^[0-9]{10}$/.test(buyerDetails.phone)) {
+      return res.status(400).json({ error: 'Enter valid 10-digit phone number' });
+    }
+
+    // group items by farmerId
+    const groups = {};
+    for (const item of cart) {
+      if (!item.farmerId) return res.status(400).json({ error: 'Invalid product data: missing farmer identifier.'});
+      
+      // Stock guard natively mapped
+      const product = await Product.findById(item.id);
+      if (!product) return res.status(404).json({ error: 'Product not found: ' + item.name });
+      if (item.quantity < 1) {
+        return res.status(400).json({ error: `Invalid quantity for ${item.name}` });
+      }
+      if (item.quantity > product.stock) {
+        return res.status(400).json({ error: `Only ${product.stock} items available in stock for ${item.name}` });
+      }
+
+      if (!groups[item.farmerId]) groups[item.farmerId] = { items: [], total: 0 };
+      
+      groups[item.farmerId].items.push({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      });
+      groups[item.farmerId].total += (item.price * item.quantity);
+    }
+
+    // Instantiate grouped orders
+    for (const [farmerId, group] of Object.entries(groups)) {
+      const order = new Order({
+        farmerId: farmerId,
+        buyerId: req.session.user._id,
+        items: group.items,
+        buyerDetails: { ...buyerDetails },
+        totalPrice: group.total,
+        paymentMethod: 'COD',
+        status: 'pending'
+      });
+      await order.save();
+
+      const notif = new Notification({
+        userId: farmerId,
+        message: `New grouped order received! Total: ₹${group.total}`,
+        type: 'new_order',
+        relatedOrderId: order._id
+      });
+      await notif.save();
+    }
+
+    res.status(200).json({ success: true, message: 'Orders processed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error processing checkout' });
+  }
+};
+
+module.exports = { ensureBuyer, renderMarketplace, renderDashboard, renderCart, renderCheckout, placeOrder, processCartCheckout };
 
 
 

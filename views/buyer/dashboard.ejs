@@ -108,12 +108,15 @@
       </div>
     <% } else { %>
       <div class="row g-4">
-        <% orders.forEach(o => { const p = o.productId || {}; %>
+        <% orders.forEach(o => { 
+            const items = o.items || [];
+            const firstProduct = items.length > 0 && items[0].productId ? items[0].productId : {};
+        %>
           <div class="col-md-6 col-lg-4">
             <div class="card product-card h-100">
               <div class="position-relative">
-                <img src="<%= p.image || p.imagePath || 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1200&auto=format&fit=crop' %>" 
-                     class="card-img-top product-image" alt="<%= p.name || 'Product' %>">
+                <img src="<%= firstProduct.image || firstProduct.imagePath || 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1200&auto=format&fit=crop' %>" 
+                     class="card-img-top product-image" alt="Multiple Products">
                 <% 
                    let badgeColor = 'secondary';
                    if(o.status === 'pending') badgeColor = 'warning text-dark';
@@ -126,8 +129,12 @@
                 </span>
               </div>
               <div class="card-body">
-                <h5 class="card-title"><%= p.name || 'Product' %></h5>
-                <p class="text-muted small mb-2"><%= o.quantity %> x <%= p.unit || 'unit' %></p>
+                <h5 class="card-title"><%= firstProduct.name ? (items.length > 1 ? firstProduct.name + ' + ' + (items.length - 1) + ' more' : firstProduct.name) : 'Farmer Items' %></h5>
+                <ul class="text-muted small mb-2 list-unstyled">
+                  <% items.forEach(item => { const p = item.productId || {}; %>
+                    <li><i class="fas fa-check text-success me-1"></i><%= item.quantity %> x <%= p.name || 'Unknown' %></li>
+                  <% }) %>
+                </ul>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="h5 text-success mb-0">Total: ₹<%= Number(o.totalPrice).toFixed(2) %></span>
                 </div>

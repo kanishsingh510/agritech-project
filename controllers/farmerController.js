@@ -184,7 +184,7 @@ const deleteProduct = async (req, res, next) => {
 const renderOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ farmerId: req.session.user._id })
-      .populate('productId')
+      .populate('items.productId')
       .sort({ createdAt: -1 });
     res.render('farmer/orders', { user: req.session.user, orders });
   } catch (err) {
@@ -201,19 +201,19 @@ const updateOrderStatus = async (req, res, next) => {
     if (!order) return res.status(404).send('Order not found');
 
     if (status === 'accepted' && order.status === 'pending') {
-      const product = await Product.findById(order.productId);
-      if (product) {
-        if (product.stock >= order.quantity) {
-          // Atomically decrement stock
-          await Product.updateOne(
-            { _id: product._id },
-            { $inc: { stock: -order.quantity } }
-          );
-        } else {
-          return res.status(400).send('Cannot accept order: Product stock is insufficient.');
+      // Loop over items safely to ensure sufficient bounds natively before decrementing.
+      for (const item of order.items) {
+        const product = await Product.findById(item.productId);
+        if (!product || product.stock < item.quantity) {
+          return res.status(400).send(`Cannot accept order: Product stock is insufficient for ${product ? product.name : 'Unknown item'}.`);
         }
-      } else {
-        return res.status(400).send('Product not found.');
+      }
+      // If securely viable, atomically iterate
+      for (const item of order.items) {
+        await Product.updateOne(
+          { _id: item.productId },
+          { $inc: { stock: -item.quantity } }
+        );
       }
     }
 

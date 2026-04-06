@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     :root {
       --primary-green: #28a745;
@@ -110,27 +109,43 @@
     <div id="cartSummary" class="card mt-4" style="display: none;">
       <div class="card-body">
         <div class="row">
-          <div class="col-md-8">
+          <div class="col-md-5">
             <h5>Order Summary</h5>
             <hr>
             <div class="d-flex justify-content-between mb-2">
-              <span>Subtotal:</span>
+              <span>Items Total:</span>
               <span id="subtotal">₹0.00</span>
             </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Tax (5%):</span>
-              <span id="tax">₹0.00</span>
-            </div>
-            <hr>
             <div class="d-flex justify-content-between">
-              <strong>Total:</strong>
+              <strong>Total to Pay (COD):</strong>
               <strong class="text-success" id="total">₹0.00</strong>
             </div>
           </div>
-          <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-success btn-lg w-100" id="checkoutBtn">
-              <i class="fas fa-lock me-2"></i>Proceed to Checkout
-            </button>
+          <div class="col-md-7 border-start pl-4">
+            <h5>Buyer Details</h5>
+            <hr>
+            <form id="checkoutForm" novalidate>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Full Name *</label>
+                  <input type="text" id="buyerName" class="form-control form-control-sm" pattern="^[a-zA-Z\s]+$" title="Name should contain only characters" required>
+                  <div class="invalid-feedback" id="nameError">Name should contain only characters</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Phone Number *</label>
+                  <input type="tel" id="buyerPhone" class="form-control form-control-sm" pattern="^[0-9]{10}$" maxlength="10" title="Enter valid 10-digit phone number" required>
+                  <div class="invalid-feedback" id="phoneError">Enter valid 10-digit phone number</div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-muted small">Delivery Address *</label>
+                <textarea id="buyerAddress" class="form-control form-control-sm" rows="2" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-success w-100" id="checkoutBtn" disabled>
+                <i class="fas fa-check-circle me-2"></i> Confirm Cash on Delivery Order
+              </button>
+              <div id="formGlobalError" class="text-danger small mt-2 d-none">Please fix errors to proceed.</div>
+            </form>
           </div>
         </div>
       </div>
@@ -187,11 +202,12 @@
               </div>
               <div class="col-md-3">
                 <div class="input-group">
-                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(${index}, -1)">-</button>
-                  <input type="number" class="form-control text-center" value="${item.quantity}" min="1" 
-                         onchange="updateQuantity(${index}, 0, this.value)" id="qty-${index}">
-                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(${index}, 1)">+</button>
+                  <button class="btn btn-outline-secondary" id="descBtn-${index}" type="button" onclick="updateQuantity(${index}, -1)" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                  <input type="text" class="form-control text-center" value="${item.quantity}" 
+                         onchange="updateQuantity(${index}, 0, this.value)" oninput="handleQtyInput(event, ${index}, ${item.stock})" id="qty-${index}">
+                  <button class="btn btn-outline-secondary" id="incBtn-${index}" type="button" onclick="updateQuantity(${index}, 1)" ${item.quantity >= item.stock ? 'disabled' : ''}>+</button>
                 </div>
+                <div class="text-danger small mt-1" id="qty-error-${index}" style="display: none;">Only ${item.stock} items available in stock</div>
               </div>
               <div class="col-md-2">
                 <strong class="text-success">₹${itemTotal.toFixed(2)}</strong>
@@ -210,23 +226,127 @@
       cartItemsDiv.innerHTML = html;
 
       // Update summary
-      const tax = subtotal * 0.05;
-      const total = subtotal + tax;
       document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
-      document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
-      document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+      document.getElementById('total').textContent = `₹${subtotal.toFixed(2)}`;
+    }
+
+    // Form Validation Logic
+    function validateForm() {
+      const name = document.getElementById('buyerName');
+      const phone = document.getElementById('buyerPhone');
+      const address = document.getElementById('buyerAddress');
+      const btn = document.getElementById('checkoutBtn');
+      const cart = getCart();
+
+      let isValid = true;
+
+      if (!name.value || !/^[a-zA-Z\s]+$/.test(name.value)) isValid = false;
+      if (!phone.value || !/^[0-9]{10}$/.test(phone.value)) isValid = false;
+      if (!address || !address.value.trim()) isValid = false;
+      
+      let cartValid = true;
+      if (cart.length === 0) cartValid = false;
+      cart.forEach((item, index) => {
+        const qtyEl = document.getElementById(`qty-${index}`);
+        const qty = qtyEl ? parseInt(qtyEl.value) : item.quantity;
+        if (isNaN(qty) || qty < 1 || qty > item.stock) cartValid = false;
+      });
+
+      btn.disabled = !(isValid && cartValid);
+    }
+
+    // Attach listeners after form mounts (wait for DOM)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.addEventListener('input', (e) => {
+        if (e.target.id === 'buyerName') {
+           e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+           e.target.classList.toggle('is-invalid', e.target.value && !/^[a-zA-Z\s]+$/.test(e.target.value));
+           validateForm();
+        }
+        if (e.target.id === 'buyerPhone') {
+           e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0,10);
+           e.target.classList.toggle('is-invalid', e.target.value && !/^[0-9]{10}$/.test(e.target.value));
+           validateForm();
+        }
+        if (e.target.id === 'buyerAddress') {
+           validateForm();
+        }
+      });
+    });
+
+    function handleQtyInput(e, index, maxStock) {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      let val = parseInt(e.target.value);
+      if (isNaN(val)) val = 0;
+      
+      const errorDiv = document.getElementById(`qty-error-${index}`);
+      if (val > maxStock) {
+        e.target.value = maxStock;
+        if (errorDiv) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = `Only ${maxStock} items available in stock`;
+        }
+      } else {
+        if (errorDiv) errorDiv.style.display = 'none';
+      }
+      
+      let actualVal = parseInt(e.target.value) || 0;
+      document.getElementById(`descBtn-${index}`).disabled = (actualVal <= 1);
+      document.getElementById(`incBtn-${index}`).disabled = (actualVal >= maxStock);
+      
+      if (actualVal >= 1 && actualVal <= maxStock) {
+        const cart = getCart();
+        cart[index].quantity = actualVal;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        validateForm();
+        
+        let newSubtotal = 0;
+        cart.forEach(item => {
+          newSubtotal += item.price * item.quantity;
+        });
+        document.getElementById('subtotal').textContent = `₹${newSubtotal.toFixed(2)}`;
+        document.getElementById('total').textContent = `₹${newSubtotal.toFixed(2)}`;
+        
+        const rowTotalEl = e.target.closest('.row').querySelector('.col-md-2 strong');
+        if (rowTotalEl) {
+          rowTotalEl.textContent = `₹${(cart[index].price * actualVal).toFixed(2)}`;
+        }
+      } else {
+        validateForm();
+      }
     }
 
     // Update quantity
     function updateQuantity(index, change, value) {
       const cart = getCart();
+      const stock = cart[index].stock;
+      let newQty = cart[index].quantity;
+
       if (value !== undefined) {
-        cart[index].quantity = parseInt(value) || 1;
+        newQty = parseInt(value);
+        if (isNaN(newQty)) newQty = 1;
       } else {
-        cart[index].quantity = Math.max(1, cart[index].quantity + change);
+        newQty = cart[index].quantity + change;
       }
+
+      if (newQty < 1) newQty = 1;
+      
+      const errorDiv = document.getElementById(`qty-error-${index}`);
+      
+      if (newQty > stock) {
+        newQty = stock;
+        if (errorDiv) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = `Only ${stock} items available in stock`;
+        }
+      } else {
+        if (errorDiv) errorDiv.style.display = 'none';
+      }
+
+      cart[index].quantity = newQty;
       saveCart(cart);
       loadCart();
+      validateForm();
     }
 
     // Remove from cart
@@ -240,64 +360,56 @@
       }
     }
 
-    // Checkout
-    document.getElementById('checkoutBtn').addEventListener('click', async function() {
+    // Checkout Form Submission
+    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
       const cart = getCart();
       if (cart.length === 0) {
         showFlashMessage('Your cart is empty', 'warning');
         return;
       }
 
-      // Calculate total
-      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      let tax = subtotal * 0.05;
-      let total = subtotal + tax;
+      const btn = document.getElementById('checkoutBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+      btn.disabled = true;
 
-      // For now, process first item. In production, you'd create a combined order
-      if (cart.length > 0) {
-        try {
-          const res = await fetch('/payment/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              amount: total * 100 // Convert to paise
-            })
-          });
-          const data = await res.json();
-          
-          if (data.error) {
-            showFlashMessage(data.error, 'danger');
-            return;
-          }
+      const buyerDetails = {
+        name: document.getElementById('buyerName').value,
+        phone: document.getElementById('buyerPhone').value,
+        address: document.getElementById('buyerAddress').value
+      };
 
-          const options = {
-            key: data.key,
-            amount: Math.round(total * 100),
-            currency: 'INR',
-            name: 'AgriTech',
-            description: 'Cart Checkout',
-            order_id: data.orderId,
-            handler: async function (response) {
-              const verifyRes = await fetch('/payment/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(response)
-              });
-              const verifyData = await verifyRes.json();
-              if (verifyData.success) {
-                // Clear cart
-                localStorage.removeItem('cart');
-                window.location.href = '/buyer/dashboard';
-              } else {
-                showFlashMessage('Payment verification failed', 'danger');
-              }
-            }
-          };
-          new Razorpay(options).open();
-        } catch (error) {
-          console.error('Error:', error);
-          showFlashMessage('Error processing checkout', 'danger');
+      try {
+        const res = await fetch('/buyer/cart/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart, buyerDetails })
+        });
+        
+        // Wait for redirect or json
+        if (res.redirected) {
+          localStorage.removeItem('cart');
+          window.location.href = res.url;
+          return;
         }
+
+        const data = await res.json();
+        
+        if (res.ok) {
+          localStorage.removeItem('cart');
+          window.location.href = '/buyer/dashboard?success=order_placed';
+        } else {
+          showFlashMessage(data.error || data.message || 'Error processing checkout!', 'danger');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showFlashMessage('Network Error processing checkout', 'danger');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     });
 
