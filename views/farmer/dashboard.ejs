@@ -448,6 +448,12 @@ if (typeof deleted === 'undefined') { deleted = false; }
           <span>Orders</span>
         </a>
 
+        <div class="px-3 mt-3 mb-2 text-uppercase small fw-bold text-muted">Modes</div>
+        <a href="/buyer/marketplace" class="nav-link text-primary fw-bold mx-2 mb-2 rounded" style="background-color: var(--primary-light);">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Switch to Buyer Mode</span>
+        </a>
+
         <div class="px-3 mt-3 mb-2 text-uppercase small fw-bold text-muted">Categories</div>
 
         <a href="/farmer/dashboard?category=fruits" class="nav-link <%= category === 'fruits' ? 'active' : '' %>">

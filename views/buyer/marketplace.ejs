@@ -117,6 +117,13 @@
               <li><a class="dropdown-item" href="#">हिंदी</a></li>
             </ul>
           </li>
+          <% if (locals.user && locals.user.role === 'farmer') { %>
+          <li class="nav-item d-flex align-items-center me-3">
+            <a href="/farmer/dashboard" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-exchange-alt me-1"></i> Switch to Seller Mode
+            </a>
+          </li>
+          <% } %>
           <li class="nav-item">
             <form action="/logout" method="POST" class="d-inline">
               <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
@@ -201,12 +208,18 @@
                 <span class="badge bg-info text-dark">Available: <%= p.stock || 0 %> <%= p.unit || 'kg' %></span>
               </div>
               <div class="d-grid gap-2">
-                <button class="btn btn-success buyBtn" data-product-id="<%= p._id %>">
-                  <i class="fas fa-shopping-bag me-2"></i>Buy Now
-                </button>
-                <button class="btn btn-outline-success addToCartBtn" data-product-id="<%= p._id %>" data-product-name="<%= p.name %>" data-product-price="<%= p.price %>" data-product-image="<%= p.image || p.imagePath || '' %>" data-farmer-id="<%= p.farmerId?._id || p.farmerId %>" data-stock="<%= p.stock %>">
-                  <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                </button>
+                <% if (locals.user && locals.user.role === 'farmer' && p.farmerId && (p.farmerId._id ? p.farmerId._id.toString() : p.farmerId.toString()) === locals.user._id.toString()) { %>
+                  <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-ban me-2"></i> Your Product
+                  </button>
+                <% } else { %>
+                  <button class="btn btn-success buyBtn" data-product-id="<%= p._id %>">
+                    <i class="fas fa-shopping-bag me-2"></i>Buy Now
+                  </button>
+                  <button class="btn btn-outline-success addToCartBtn" data-product-id="<%= p._id %>" data-product-name="<%= p.name %>" data-product-price="<%= p.price %>" data-product-image="<%= p.image || p.imagePath || '' %>" data-farmer-id="<%= p.farmerId?._id || p.farmerId %>" data-stock="<%= p.stock %>">
+                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                  </button>
+                <% } %>
               </div>
             </div>
           </div>

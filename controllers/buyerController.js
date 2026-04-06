@@ -5,7 +5,8 @@ const Order = require('../models/Order');
 const Notification = require('../models/Notification');
 
 const ensureBuyer = (req, res, next) => {
-  if (!req.session.user || req.session.user.role !== 'buyer') return res.redirect('/login');
+  if (!req.session.user || !['buyer', 'farmer'].includes(req.session.user.role)) return res.redirect('/login');
+  res.locals.user = req.session.user;
   next();
 };
 
@@ -69,6 +70,10 @@ const placeOrder = async (req, res, next) => {
     const product = await Product.findById(productId);
     if (!product) return res.status(404).send('Product not found');
     
+    if (product.farmerId.toString() === req.session.user._id.toString()) {
+      return res.status(400).send('You cannot purchase your own product');
+    }
+    
     if (qty > product.stock) {
       return res.status(400).send('Low stock available');
     }
@@ -129,6 +134,9 @@ const processCartCheckout = async (req, res, next) => {
       // Stock guard natively mapped
       const product = await Product.findById(item.id);
       if (!product) return res.status(404).json({ error: 'Product not found: ' + item.name });
+      if (product.farmerId && product.farmerId.toString() === req.session.user._id.toString()) {
+        return res.status(400).json({ error: `You cannot purchase your own product: ${item.name}` });
+      }
       if (item.quantity < 1) {
         return res.status(400).json({ error: `Invalid quantity for ${item.name}` });
       }

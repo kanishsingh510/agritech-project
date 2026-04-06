@@ -46,6 +46,13 @@
           <li class="nav-item">
             <a class="nav-link" href="/buyer/dashboard">My Purchases</a>
           </li>
+          <% if (locals.user && locals.user.role === 'farmer') { %>
+          <li class="nav-item d-flex align-items-center me-3">
+            <a href="/farmer/dashboard" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-exchange-alt me-1"></i> Switch to Seller Mode
+            </a>
+          </li>
+          <% } %>
           <li class="nav-item">
             <form action="/logout" method="POST" class="d-inline">
               <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
@@ -184,7 +191,7 @@
       document.getElementById('incBtn').disabled = (val >= maxStock);
       validateForm();
     }
-
+  </script>
   <script>
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       if (document.getElementById('checkoutBtn').disabled) {
